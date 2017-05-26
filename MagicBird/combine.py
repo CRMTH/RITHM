@@ -7,7 +7,7 @@ class csvcombine:
         self.directory = directory
         self.dirTemp = dirTemp
 
-    def combinecsv (self, frequency, dirOut = "", directory = "", dirTemp = ""):
+    def combinecsv (self, frequency, delete, dirOut = "", directory = "", dirTemp = ""):
         if dirOut is "":
             dirOut = self.dirOut
         if directory is "":
@@ -49,6 +49,11 @@ class csvcombine:
                                     cells = line.split(',')
                                     saveFile.writerow([cell for cell in cells])
                                 count += 1
+
+        if delete == 1:
+            files = sorted(os.listdir(dirTemp))
+            for f in files:
+                os.remove(dirTemp+f)
 
         
 

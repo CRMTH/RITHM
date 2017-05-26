@@ -42,9 +42,13 @@ class decoder:
             return record
         
     # This text the text portion of the tweet and formats it into a way that we can read it  
-    def parseText(self, data):       
-        try: text = data['text']
-        except: text = '[missing data]'
+    def parseText(self, data, trunc):       
+        if trunc:
+            try: text = data['extended_tweet']['full_text']
+            except: text = '[missing data]'
+        else:
+            try: text = data['text']
+            except: text = '[missing data]'
         #text = unicodedata.encode('ascii', 'ignore')
         text = re.sub('"', ' ["] ', text)
         text = re.sub(r'\\n', ' [RETURN] ', text)
@@ -92,48 +96,59 @@ class decoder:
         return 0
 
 
-    def writeToCSV(self, data, text, fn, count): 
+    def writeToCSV(self, data, text, fn, count, truncated): 
 
+        entities = []
         outfile = self.dirTemp+str(fn[:14]+'_data.csv')   ######################### <--- update to be more descriptive
-        u_id = '\''+str(data['user']['id'])
-        user = data['user']['screen_name'].encode('utf-8')
-        try: utc_off = str(int(data['user']['utc_offset'])/3600)
-        except TypeError: utc_off = ''
-        created = data['user']['created_at']
-        faves = str(data['user']['favourites_count'])
-        followers = str(data['user']['followers_count'])
-        following = str(data['user']['friends_count'])
-        tweets = str(data['user']['statuses_count'])
-        t_id = '\''+data['id_str']
+        entities.append('\''+str(data['user']['id']))   #userID
+        entities.append(data['user']['screen_name'].encode('utf-8')) #user
+        try: entities.append(str(int(data['user']['utc_offset'])/3600)) #utc
+        except TypeError: entities.append('') #utc
+        entities.append(data['user']['created_at']) #created
+        entities.append(str(data['user']['favourites_count'])) #faves
+        entities.append(str(data['user']['followers_count'])) #followers
+        entities.append(str(data['user']['friends_count'])) #following
+        entities.append(str(data['user']['statuses_count'])) #tweets
+        entities.append('\''+data['id_str']) #t_id
         try:
-            t_id_rt = '\''+data['retweeted_status']['id_str']
-            user_rt = data['retweeted_status']['user']['screen_name']
-            rt_count = data['retweeted_status']['retweet_count']
+            entities.append('\''+data['retweeted_status']['id_str']) #t_id_rt
+            entities.append(data['retweeted_status']['user']['screen_name']) #user_rt
+            entities.append(data['retweeted_status']['retweet_count']) #rt_count
         except:
-            t_id_rt = ''
-            user_rt = ''
-            rt_count = 0
+            entities.append('') #t_id_rt
+            entities.append('') #user_rt
+            entities.append(0) #rt_count
+        entities.append(truncated) #truncated
+        entities.append(text) #text
         date = data['created_at']
-        day = date[:3]
-        yyyy = date[-4:]
-        month = date[:7][-3:]
-        dd = date[:10][-2:]
-        hh = date[:13][-2:]
-        mm = date[:16][-2:]
-        ss = date[:19][-2:]
-        url = 'http://twitter.com/'+str(data['user']['screen_name'].encode('utf-8'))+'/status/'+str(data['id_str'])
+        entities.append(date) #date
+        entities.append(date[:3]) #day
+        entities.append(date[-4:]) #year
+        entities.append(date[:7][-3:]) #month
+        entities.append(date[:10][-2:]) #day
+        entities.append(date[:13][-2:]) #hour
+        entities.append(date[:16][-2:]) #min
+        entities.append(date[:19][-2:]) #sec
+        entities.append('http://twitter.com/'+str(data['user']['screen_name'].encode('utf-8'))+'/status/'+str(data['id_str'])) #url
         coords = decoder.getCoords(self, data)
+        entities.append(coords[0]) #Lat
+        entities.append(coords[1]) #Lon
+        
+        if truncated:
+            try:
+                for mentions in data['extended_tweet']['entities']['user_mentions']:
+                    entities.append(mentions['screen_name'])
+            except:
+                doNothing = 0
         
         with open(outfile,'a') as csvfile:      
             saveFile = csv.writer(csvfile, delimiter=',', lineterminator='\n')        
             if count == 0:
                 saveFile.writerow(['userID', 'username', 'retweet user', 'utc off', 'profile created',
                                    'favorites', 'followers', 'following', 'tweets', 'date', 'tweetID',
-                                   'retweetID', 'retweet count', 'text', 'day', 'year', 'month', 'day', 
-                                   'hour', 'min', 'sec', 'url', 'lat', 'lon'])                    
-            saveFile.writerow([u_id , user, user_rt, utc_off, created,
-                               faves, followers, following, tweets, date, t_id, 
-                               t_id_rt, rt_count, text , day, yyyy, month, dd, hh, mm, ss, url, coords[0], coords[1]])
+                                   'retweetID', 'retweet count','extended', 'text', 'day', 'year', 'month', 'day', 
+                                   'hour', 'min', 'sec', 'url', 'lat', 'lon', 'mentions'])                    
+            saveFile.writerow([entity for entity in entities])
 
 
     # This needs to take in the record list from the fixjson function and this will split it all up into a happy format for the csv file
@@ -142,8 +157,10 @@ class decoder:
         count = 0    # This is only needed to see when it is the first tweet in the list and the csv file will make a header before writing the tweet
 
         # This is the main loop where all the tweets in the record get checked
-        for data in record['tweet']:        # This grabs each tweet one by one           
-            kwtext = decoder.parseText(self, data) # parse the text so that it can be examined
+        for data in record['tweet']:        # This grabs each tweet one by one
+            try: truncated = (data['truncated'])
+            except: truncated = False
+            kwtext = decoder.parseText(self, data, truncated) # parse the text so that it can be examined
             decoder._tweets_checked += 1 #increment the number of tweets checked
 
             printed = 0
@@ -156,7 +173,7 @@ class decoder:
                     decoder._tweet_count += 1    #increment the count on the number of tweets printed
                     if emojify == 1:
                         kwtext = decoder.emojify(self, kwtext)
-                    decoder.writeToCSV(self, data, kwtext, fileName, count)
+                    decoder.writeToCSV(self, data, kwtext, fileName, count, truncated)
                     count += 1
 
         # This is the second loop where the data from the day file is checked and written to a csv file

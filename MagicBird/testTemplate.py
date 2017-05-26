@@ -43,11 +43,21 @@ with open(directory + "template.txt", 'r') as template:
         if lineCount == 8:
             combine = str(line)[str(line).find(":")+2:]
         if lineCount == 9:
+            clear = str(line)[str(line).find(":")+2:]       #Clear will remove all files in the tempDir when finished
+            clear = 0
+            if clear != '':
+                clear = 1
+        if lineCount == 10:
             keywords = {}
-        if lineCount >= 10:
+        if lineCount >= 11:
             if line.rstrip() not in keywords.keys():
                 keywords.update({line.rstrip():0})
         lineCount += 1
+
+if clear == 1:
+    files = sorted(os.listdir(dirTemp))
+    for f in files:
+        os.remove(dirTemp+f)
 
 files = sorted(os.listdir(dirIn))
 print("\nREADING TWEETS FROM " + str(start) + ' to ' + str(end) +'\n')
@@ -55,14 +65,14 @@ print("\nREADING TWEETS FROM " + str(start) + ' to ' + str(end) +'\n')
 t = str(time.time())
 for f in files:
     if f[-5:] =='.json':
-        try:
-            if int(f[:8]) >= start:
-                if int(f[:8]) <= end:
-                    d = decoder(keywords, dirOut, directory, dirTemp, emojify, emoji_file)
-                    record = d.fixjson(dirIn, f)
-                    d.jsontocsv(record,f,geo,emojify)
-        except:
-            print("ERROR!!!!!!!!!!!")
+        #try:
+        if int(f[:8]) >= start:
+            if int(f[:8]) <= end:
+                d = decoder(keywords, dirOut, directory, dirTemp, emojify, emoji_file)
+                record = d.fixjson(dirIn, f)
+                d.jsontocsv(record,f,geo,emojify)
+        #except:
+        #    print("ERROR!!!!!!!!!!!")
 
 c = csvcombine(dirOut, directory, dirTemp)
-c.combinecsv(combine)
+c.combinecsv(combine, clear)
