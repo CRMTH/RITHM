@@ -88,10 +88,13 @@ class decoder:
     # Goes through each keyword in the decoder and checks if it is in the tweet
     # If a keyword is in the tweet it will return a 1 so it knows it is to print the tweet in the csv file
     # If there is no keyword then return a 0 to skip over the tweet
-    def checkForKWs(self, kwtext):    
+    def checkForKWs(self, kwtext):
+        kwtext = re.sub('#', '', kwtext)
+        #kwtext = re.sub('@', '', kwtext)
         for kw in self.keywords.keys():     #for each keyword in the file
             if ' ' + kw + ' ' in kwtext:      #if the keyword is in the text
                 self.keywords[kw] += 1             #add one to the keyword counter
+                #print(kw)
                 return 1
         return 0
 
@@ -145,8 +148,8 @@ class decoder:
             saveFile = csv.writer(csvfile, delimiter=',', lineterminator='\n')        
             if count == 0:
                 saveFile.writerow(['userID', 'username', 'retweet user', 'utc off', 'profile created',
-                                   'favorites', 'followers', 'following', 'tweets', 'date', 'tweetID',
-                                   'retweetID', 'retweet count','extended', 'text', 'day', 'year', 'month', 'day', 
+                                   'favorites', 'followers', 'following', 'tweets', 'tweetID',
+                                   'retweetID', 'retweet count','extended', 'text', 'date', 'day', 'year', 'month', 'day', 
                                    'hour', 'min', 'sec', 'url', 'lat', 'lon', 'mentions'])                    
             saveFile.writerow([entity for entity in entities])
 
