@@ -44,14 +44,16 @@ with open(directory + "template.txt", 'r') as template:
             combine = str(line)[str(line).find(":")+2:]
         if lineCount == 9:
             clear = str(line)[str(line).find(":")+2:]       #Clear will remove all files in the tempDir when finished
-            clear = 0
-            if clear != '':
+            if clear == '1':
                 clear = 1
+            else:
+                clear = 0
         if lineCount == 10:
             keywords = {}
         if lineCount >= 11:
             if line.rstrip() not in keywords.keys():
-                keywords.update({line.rstrip():0})
+                if line.rstrip() != '' and line.rstrip() != ' ':
+                    keywords.update({line.rstrip():0})
         lineCount += 1
 
 if clear == 1:
