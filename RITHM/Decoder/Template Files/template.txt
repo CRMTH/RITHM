@@ -1,6 +1,6 @@
-DirIn: C:/Users/crlar/Desktop/MagicBird/JSON Files/
-DirOut: C:/Users/crlar/Desktop/MagicBird/FinalForm/
-DirTemp: C:/Users/crlar/Desktop/MagicBird/TempDir/
+DirIn: C:/Users/crlar/Desktop/RITHM/Decoder/JSON Files/
+DirOut: C:/Users/crlar/Desktop/RITHM/Decoder/FinalForm/
+DirTemp: C:/Users/crlar/Desktop/RITHM/Decoder/TempDir/
 Test: None
 Start: 20160101
 End: 20170524
