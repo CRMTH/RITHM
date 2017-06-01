@@ -4,7 +4,7 @@ import time, os, re, sys
 from decode import decoder
 from combine import csvcombine
 
-directory = "C:\\Users\\crlar\\Desktop\\MagicBird\\"
+directory = "C:\\Users\\crlar\\Desktop\\RITHM\\Decoder\\Template Files\\"
 
 lineCount = 0
 with open(directory + "template.txt", 'r') as template:
