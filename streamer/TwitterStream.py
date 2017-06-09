@@ -28,10 +28,10 @@ import os, csv
 pkl_mode = False
 
 ## Twitter API keys (ATOD_stream):
-consumer_key = 'Nu6zqJMAyvEfuvcWVBCVaL45B'
-consumer_secret = 'gVemI189Fmh0MVIAhMzYAcTMj2k6lfn26iJRYjfSLl6osDp6DH'
-access_token = '2916021555-rkrT1HNp4ABkYOjhpJLTCSlXge1PZfCpSlYxCoT'
-access_token_secret = 'nbdCwzIpLVu48GEZjTifJiL6skJyzdf5p65NzPsZWai84'
+consumer_key = ''
+consumer_secret = ''
+access_token = ''
+access_token_secret = ''
 
 # Set directory and use dynamic file names
 indirectory = '//home/colditz/'
