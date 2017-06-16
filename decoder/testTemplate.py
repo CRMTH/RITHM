@@ -67,14 +67,15 @@ print("\nREADING TWEETS FROM " + str(start) + ' to ' + str(end) +'\n')
 t = str(time.time())
 for f in files:
     if f[-5:] =='.json':
-        #try:
-        if int(f[:8]) >= start:
-            if int(f[:8]) <= end:
-                d = decoder(keywords, dirOut, directory, dirTemp, emojify, emoji_file)
-                record = d.fixjson(dirIn, f)
-                d.jsontocsv(record,f,geo,emojify)
-        #except:
-        #    print("ERROR!!!!!!!!!!!")
+        try:
+            if int(f[:8]) >= start:
+                if int(f[:8]) <= end:
+                    d = decoder(keywords, dirOut, directory, dirTemp, emojify, emoji_file)
+                    record = d.fixjson(dirIn, f)
+                    d.jsontocsv(record,f,geo,emojify)
+        except:
+            print("Incorrect format: ",f)
+            continue
 
 c = csvcombine(dirOut, directory, dirTemp)
 c.combinecsv(combine, clear)
