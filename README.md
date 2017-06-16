@@ -1,6 +1,6 @@
 ## Real-time Infoveillance of Twitter Health Messages (RITHM)
-### [Center for Research on Media, Technology, and Health](http://mth.pitt.edu/)
-### University of Pittsburgh School of Medicine
+__[Center for Research on Media, Technology, and Health](http://mth.pitt.edu/)
+University of Pittsburgh School of Medicine__
 
 _This is the future home of documentation for installing and utilizing the RITHM framework to retrieve and parse Twitter Streaming API data for public health research. An associated mauscript is currently under development and this repository will continue to be updated in parallel._
 
