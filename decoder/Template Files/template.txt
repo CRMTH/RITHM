@@ -1,65 +1,12 @@
-DirIn: C:/Users/crlar/Desktop/RITHM/Decoder/JSON Files/
-DirOut: C:/Users/crlar/Desktop/RITHM/Decoder/FinalForm/
-DirTemp: C:/Users/crlar/Desktop/RITHM/Decoder/TempDir/
+DirIn: //home/jason/repos/streamer/out/
+DirOut: //home/jason/repos/RITHM/decoder/FinalForm/
+DirTemp: //home/jason/repos/RITHM/decoder/TempDir/
 Test: None
 Start: 20160101
-End: 20170524
+End: 20170617
 Geo: 0
 Emojify: emojilist4.csv
-Combine: monthly
+Combine: daily
 Clear: 0
 Keywords:
-greysabc
-
-shondalandtv
-
-greysmedical
-
-zoanneclack
-
-andyreaser
-
-ijessewilliams
-
-kellymccreary
-
-msdebbieallen
-
-ellenpompeo
-
-shondarhimes
-
-samuelljackson
-
-maggies mom
-
-maggie mom
-
-maggiesmom
-
-greysanatomy
-
-greys
-
-grey anatomy
-
-ellen pompeo
-
-clinicaltrial
-
-clinicaltrials
-
-clinical trial
-
-clinical trials
-
-chemo
-
-bestillmysoul
-
-be still my soul
-
-till i hear it from you
-
-shondaland
-eastloshigh
+drinking

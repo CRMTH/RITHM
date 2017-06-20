@@ -1,4 +1,6 @@
-import json, re, datetime, csv, unicodedata, sys, base64
+import json, re, csv
+import traceback
+#import unicodedata, sys, base64, datetime
 
 class decoder:
 
@@ -6,16 +8,16 @@ class decoder:
     _tweet_count = 0
     _date_data = {}
 
-    def __init__ (self, keywords, dirOut, directory, dirTemp, emojify, emoji_file):
+    def __init__ (self, keywords, dirOut, dirIn, dirTemp, emojify, emoji_file):
         self.keywords = {}
         for kw in keywords.keys():
             self.keywords.update({kw.lower() : 0})
         self.dirOut = dirOut
-        self.directory = directory
+        self.dirIn = dirIn
         self.dirTemp = dirTemp
         self.emojis = {}
         if emojify == 1:
-            with open(directory + emoji_file, 'r') as f:
+            with open(emoji_file, 'r') as f:
                 reader = csv.reader(f)
                 emoji_list = list(reader)
                 for emoji in emoji_list:
@@ -43,12 +45,16 @@ class decoder:
         
     # This text the text portion of the tweet and formats it into a way that we can read it  
     def parseText(self, data, trunc):       
-        if trunc:
-            try: text = data['extended_tweet']['full_text']
-            except: text = '[missing data]'
-        else:
-            try: text = data['text']
-            except: text = '[missing data]'
+        try: 
+            text = data['extended_tweet']['full_text']
+        except: 
+            try: 
+                text = data['retweeted_status']['text']
+            except:
+                try:
+                    text = data['text']
+                except: 
+                    text = '[missing data]'
         #text = unicodedata.encode('ascii', 'ignore')
         text = re.sub('"', ' ["] ', text)
         text = re.sub(r'\\n', ' [RETURN] ', text)
@@ -123,6 +129,7 @@ class decoder:
             entities.append(0) #rt_count
         entities.append(truncated) #truncated
         entities.append(text) #text
+
         date = data['created_at']
         entities.append(date) #date
         entities.append(date[:3]) #day
@@ -132,25 +139,25 @@ class decoder:
         entities.append(date[:13][-2:]) #hour
         entities.append(date[:16][-2:]) #min
         entities.append(date[:19][-2:]) #sec
-        entities.append('http://twitter.com/'+str(data['user']['screen_name'].encode('utf-8'))+'/status/'+str(data['id_str'])) #url
+        entities.append('http://twitter.com/'+str(data['user']['screen_name'].encode('utf-8'))+'/status/'+str(data['id_str']).lstrip('\'')) #url
         coords = decoder.getCoords(self, data)
         entities.append(coords[0]) #Lat
         entities.append(coords[1]) #Lon
         
-        if truncated:
-            try:
-                for mentions in data['extended_tweet']['entities']['user_mentions']:
-                    entities.append(mentions['screen_name'])
-            except:
-                doNothing = 0
+#        if truncated:
+#            try:
+#                for mentions in data['extended_tweet']['entities']['user_mentions']:
+#                    entities.append(mentions['screen_name'])
+#            except:
+#                pass
         
         with open(outfile,'a') as csvfile:      
             saveFile = csv.writer(csvfile, delimiter=',', lineterminator='\n')        
             if count == 0:
-                saveFile.writerow(['userID', 'username', 'retweet user', 'utc off', 'profile created',
+                saveFile.writerow(['userID', 'username', 'utc off', 'profile created',
                                    'favorites', 'followers', 'following', 'tweets', 'tweetID',
-                                   'retweetID', 'retweet count','extended', 'text', 'date', 'day', 'year', 'month', 'day', 
-                                   'hour', 'min', 'sec', 'url', 'lat', 'lon', 'mentions'])                    
+                                   'retweetID', 'retweet user', 'retweet count','extended', 'text', 'date', 'day', 'year', 'month', 'day', 
+                                   'hour', 'min', 'sec', 'url', 'lat', 'lon'])                    
             saveFile.writerow([entity for entity in entities])
 
 
@@ -192,7 +199,7 @@ class decoder:
             for key in self.keywords:
                 #print key + ":" + keywords[key]
                 self._date_data[fileName[:8]][key] += self.keywords[key]
-            self._date_data[fileName[:8]]['Tweets Hit'] += self._tweet_count
-            self._date_data[fileName[:8]]['Tweets Checked'] += self._tweets_checked
+            self._date_data[fileName[:8]]['Tweets Hit'] += str(self._tweet_count)
+            self._date_data[fileName[:8]]['Tweets Checked'] += str(self._tweets_checked)
 
         decoder.clear(self) #clears the data from that day
