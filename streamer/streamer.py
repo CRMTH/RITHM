@@ -9,7 +9,7 @@ Version: 2017-09-23
 Python version: 2.7 (tested) & 3.5+ (preferred)
 
 Required Python packages:
- tweepy: http://docs.tweepy.org/en/v3.4.0/install.html
+ twython: https://github.com/ryanmcgrath/twython
    & requests_oauthlib: http://github.com/requests/requests-oauthlib
 
 """
@@ -21,7 +21,7 @@ from twython import TwythonStreamer
 suffix = '_streamer.json' #Suffix (always include ".json" extension!)
 auth = 'auth.ini' #Text file w/ Twitter API authentication keys
 lang = ['en'] #Language filters: https://dev.twitter.com/web/overview/languages
-dir_path = '//home/jason/repos/RITHM/streamer/'
+dir_path = '//home/jason/repos/RITHM/streamer/' #My default directory path
 
 
 ## --------------------------------------------------------------------
@@ -42,6 +42,8 @@ def paths(dir_path):
     for line in open(dir_path+'paths.ini'):
         if 'setup_in' in line:
             indirectory = line.split(':')[1].strip()
+            if indirectory == '':
+                indirectory = dir_path
         if 'data_out' in line:
             outdirectory = line.split(':')[1].strip()
     return indirectory, outdirectory
@@ -71,7 +73,7 @@ def keyring(infile=indirectory+auth):
     keys = []
     for line in open(infile):
             if line[:1] =='#' or line.strip()=='':
-                pass # Ignore comments or blank lines 
+                continue # Ignore comments or blank lines 
             else:
                 if ':' in line:
                     keys.append(str(line.split(':')[1]).strip())
@@ -181,7 +183,7 @@ def setStreamer(KW=getKeywords()):
     while True:
         try:
             if killSwitch():
-                err_log(err='stream killed by user (on data)', code='xit')
+                err_log(err='stream terminated by user', code='xit')
                 break
             else:
                 stream = MyStreamer(keyring()[0],keyring()[1],keyring()[2],keyring()[3]) 
@@ -196,7 +198,7 @@ def setStreamer(KW=getKeywords()):
             err = str(sys.exc_info()[1])
             #print(err)
             if killSwitch():
-                err_log(err='stream killed by user (on error)', code='xit')
+                err_log(err='stream terminated with error', code='xit')
                 break
             else: #Error handling
                 err_log(err)
