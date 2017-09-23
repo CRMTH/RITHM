@@ -3,10 +3,10 @@
 Center for Research on Media, Technology, and Health
 University of Pittsburgh
 
-Author: colditzjb
-Update: 2017-06-14
+Author:  colditzjb
+Version: 2017-09-23
 
-Python: 2.7 (tested) & 3.5 (preferred)
+Python version: 2.7 (tested) & 3.5+ (preferred)
 
 Required Python packages:
  tweepy: http://docs.tweepy.org/en/v3.4.0/install.html
@@ -15,9 +15,6 @@ Required Python packages:
 """
 
 import time, datetime, sys, json, os, csv
-#from tweepy.streaming import StreamListener
-#from tweepy import OAuthHandler
-#from tweepy import Stream
 from twython import TwythonStreamer
 
 ## SET DIRECTORIES AND OPTIONS HERE
@@ -28,7 +25,7 @@ dir_path = '//home/jason/repos/RITHM/streamer/'
 
 
 ## --------------------------------------------------------------------
-## --- Don't mess with the rest, unless you are improving the code. ---
+## --- Don't mess with the rest, unless you are improving the code! ---
 ## --------------------------------------------------------------------
 
 
@@ -71,12 +68,16 @@ def killSwitch(killDirectory=indirectory):
 
 
 def keyring(infile=indirectory+auth):
-    lines = [line.rstrip('\n') for line in open(infile)]
-    consumer_key = lines[0]
-    consumer_secret = lines[1]
-    access_token = lines[2]
-    access_token_secret = lines[3]
-    return consumer_key, consumer_secret, access_token, access_token_secret
+    keys = []
+    for line in open(infile):
+            if line[:1] =='#' or line.strip()=='':
+                pass # Ignore comments or blank lines 
+            else:
+                if ':' in line:
+                    keys.append(str(line.split(':')[1]).strip())
+                else:
+                    keys.append(str(line).strip())
+    return keys
 
 
 ## Get streaming API search filters
@@ -180,14 +181,14 @@ def setStreamer(KW=getKeywords()):
     while True:
         try:
             if killSwitch():
-                err_log(err='stream killed (on data)', code='xit')
+                err_log(err='stream killed by user (on data)', code='xit')
                 break
             else:
                 stream = MyStreamer(keyring()[0],keyring()[1],keyring()[2],keyring()[3]) 
                 if KW == False:
                     stream.statuses.sample() #Use 1% sample of all Twitter activity
                 elif len(KW[1]) == 0 or KW[1] == False or KW[1] == None:
-                    stream.statuses.filter(track=KW[0]) #Keywords + language                                    
+                    stream.statuses.filter(track=KW[0]) #Keywords, no language                                   
                 else:
                     stream.statuses.filter(track=KW[0], languages=KW[1]) #Keywords + language                
             
@@ -195,7 +196,7 @@ def setStreamer(KW=getKeywords()):
             err = str(sys.exc_info()[1])
             #print(err)
             if killSwitch():
-                err_log(err='stream killed (on error)', code='xit')
+                err_log(err='stream killed by user (on error)', code='xit')
                 break
             else: #Error handling
                 err_log(err)
@@ -223,7 +224,7 @@ class MyStreamer(TwythonStreamer):
             self.disconnect()
 
     def on_error(self, status_code, data):
-        #print(status_code, ' Twitter error')
+        print(status_code, str(data), ' Twitter error')
         if not killSwitch():
             if str(status_code) in ['104', '420']: 
                 err = 'Twitter error'
