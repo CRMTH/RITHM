@@ -17,7 +17,7 @@ You should replace the "keywords1.kws" file with a new file that includes the pa
 
 
 ### Running the streamer:
-The streamer can be run within a graphical interface for testing, if desired. Generally, the streamer should be run from a command line interface. Navigate to the streamer directory and use a command something like "python3 streamer.py" if you are using Python 3.
+The streamer can be run within a graphical interface for testing, if desired. Generally, the streamer should be run from a command line interface. Navigate to the streamer directory and use a command something like "python3 streamer.py" if you are using Python 3. When activated, the process will create a "KillSwitch.txt" file in the streamer directory (see below).
 
 
 ### Stopping the streamer:
