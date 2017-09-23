@@ -1,0 +1,7 @@
+ERROR STRING,ACTION,DESCRIPTION
+retries exceeded,backoff,connection broken
+incomplete,log,connection hiccup
+timed out,log,connection hiccup
+decode,log,formatting
+attribute,log,formatting
+length,pass,keep alive ping
