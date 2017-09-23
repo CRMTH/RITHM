@@ -5,13 +5,13 @@ This streamer application has been tested in Python 2.7, but Python 3.5+ is the 
 
 
 ### Authentication:
-You must have your own Twitter Developer account and Application Programming Interface (API) keys in order to use the streamer. This is free, but requires some configuration. Please see the [Twython](https://github.com/ryanmcgrath/twython) documentation for additional details. Once obtained, API keys need to be entered in the **auth.ini** file.
+You must have your own Twitter Developer account and Application Programming Interface (API) keys in order to use the streamer. This is free, but requires some configuration. Please see the [Twython](https://github.com/ryanmcgrath/twython) documentation for additional details. Once obtained, API keys need to be entered in the "auth.ini" file.
 
 ***Note:** The streamer is not configured for running multiple streams at once. You should not attempt to operate multiple streams using the same account or using different accounts on the same IP address. Twitter may disable your account(s) for attempting to do this.*
 
 
 ### Selecting keywords:
-You should replace the "keywords1.kws" file with a new file that includes the particular keywords that you want to search for. Multiple keyword files are supported! Any file in the streamer directory with a **.kws** extension will be treated as a keyword file. The streamer will check for changes in keyword files at midnight (local time). This allows you to start and stop data collection for particular keywords without interrupting the streamer process. Active keyword listings (combined across all keyword files) are available in **\*\_log.tsv** files that are generally in the **/RITHM/data/streamer_raw/** directory, along with the data output files.
+You should replace the "keywords1.kws" file with a new file that includes the particular keywords that you want to search for. Multiple keyword files are supported! Any file in the streamer directory with a **.kws** extension will be treated as a keyword file. The streamer will check for changes in keyword files at midnight (local time). This allows you to start and stop data collection for particular keywords without interrupting the streamer process. Active keyword listings (combined across all keyword files) are available in **\*\_log.tsv** files that are generally in the **./RITHM/data/streamer_raw/** directory, along with the output data files.
 
 ***Note:** There is no available documentation for an upper-limit of keywords allowed, but there is a limit! Estimates are between 200-400 keywords. Additional testing in this area would be appreciated!*
 
@@ -21,10 +21,12 @@ The streamer can be run within a graphical interface for testing, if desired. Ge
 
 
 ### Stopping the streamer:
-In order to safely terminate the streamer, delete the "KillSwitch.txt" file fromthe streamer directory. The stream will terminate as soon as the next tweet is delivered. If you kill the streamer process in other ways, the current output data file is likely to become corrupted. 
+In order to safely stop the streamer process, simply delete the "KillSwitch.txt" file from the streamer directory. The process will terminate as soon as the next tweet is delivered. If you kill the streamer process in other ways, the current output data file is likely to become corrupted. 
 
 
 ### Advanced options:
-You can change input and output directories from the "paths.ini" file. There are also some options available toward the top of the "streamer.py" file, which will allow you to further tweak directories and language settings. By default, the streamer is limited to tweets that are classified as English language by Twitter.
+You can change input and output directories using the "paths.ini" file. There are also some options available toward the top of the "streamer.py" file, which will allow you to further tweak directories and language settings. By default, the streamer is limited to tweets that are classified as English language by Twitter.
 
 
+### Using the data:
+The data are dumped to the currently-active output file in JavaScript Object Notation (JSON) format. At midnight (local time), a new file will be created for the next day's data. File names begin with a datetime stamp in a "YYYYMMDDHHMMSS" format. This helps to limit file size and keeps the output organized, one day at a time. Once data are collected, the *RITHM decoder* is used for parsing, formatting, and subsampling raw data.
