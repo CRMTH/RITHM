@@ -42,10 +42,12 @@ def paths(dir_path):
     for line in open(dir_path+'paths.ini'):
         if 'setup_in' in line:
             indirectory = line.split(':')[1].strip()
-            if indirectory == '':
-                indirectory = dir_path
         if 'data_out' in line:
             outdirectory = line.split(':')[1].strip()
+    if not indirectory:
+        indirectory = dir_path
+    if not outdirectory:
+        outdirectory = '../data/streamer_raw/'
     return indirectory, outdirectory
 
 indirectory = paths(dir_path)[0]
