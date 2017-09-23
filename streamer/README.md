@@ -1,7 +1,7 @@
 .
 
 ### Requirements:
-This streamer application has been tested in Python 2.7, but Python 3.5+ is the preferred environment. You will also need to install the [Twython](https://github.com/ryanmcgrath/twython) package prior to use.
+This *RITHM streamer* has been tested in Python 2.7, but Python 3.5+ is the preferred environment. You will also need to install the [Twython](https://github.com/ryanmcgrath/twython) package prior to use.
 
 
 ### Authentication:
