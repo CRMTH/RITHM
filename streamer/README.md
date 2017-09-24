@@ -1,7 +1,7 @@
 .
 
 ### Requirements:
-This *RITHM streamer* has been tested in Python 2.7, but Python 3.5+ is the preferred environment. You will also need to install the [Twython](https://github.com/ryanmcgrath/twython) package prior to use.
+The *RITHM streamer* has been tested for Python 2.7, but Python 3.5+ is the preferred environment. You will also need to install the [Twython](https://github.com/ryanmcgrath/twython) package prior to use.
 
 
 ### Authentication:
@@ -17,16 +17,17 @@ You should replace the "keywords1.kws" file with a new file that includes the pa
 
 
 ### Running the streamer:
-The streamer can be run within a graphical interface for testing, if desired. Generally, the streamer should be run from a command line interface. Navigate to the streamer directory and use a command something like "python3 streamer.py" if you are using Python 3. When activated, the process will create a "KillSwitch.txt" file in the streamer directory (see below).
+The streamer can be run within a graphical interface for testing, if desired. Generally, the streamer should be run from a command line interface. Navigate to the streamer directory and use a command like ``nohup python3 streamer.py &``\* if you are using Python 3. When activated, the process will automatically create a "KillSwitch.txt" file in the streamer directory.
 
+**\*** *This particular command generally works in a Unix BASH shell. The "nohup" will keep the process running after you close the terminal or log off (if working remotely).
 
 ### Stopping the streamer:
 In order to safely stop the streamer process, simply delete the "KillSwitch.txt" file from the streamer directory. The process will terminate as soon as the next tweet is delivered. If you kill the streamer process in other ways, the current output data file is likely to become corrupted. 
 
 
 ### Advanced options:
-You can change input and output directories using the "paths.ini" file. There are also some options available toward the top of the "streamer.py" file, which will allow you to further tweak directories and language settings. By default, the streamer is limited to tweets that are classified as English language by Twitter.
+You can change input and output directories using the "paths.ini" file. There are also some options available toward the top of the "streamer.py" file, which will allow you to further tweak the working directory and language settings. By default, the streamer is limited to tweets that are recognized as English language by Twitter.
 
 
 ### Using the data:
-The data are dumped to the currently-active output file in JavaScript Object Notation (JSON) format. At midnight (local time), a new file will be created for the next day's data. File names begin with a datetime stamp in a "YYYYMMDDHHMMSS" format. This helps to limit file size and keeps the output organized, one day at a time. Once data are collected, the *RITHM decoder* is used for parsing, formatting, and subsampling raw data.
+The tweets are dumped into the currently-active output file in JavaScript Object Notation (JSON) format. At midnight (local time), a new file will be created for the next day's data. File names begin with a datetime stamp in a "YYYYMMDDHHMMSS" format. This helps to limit file size and keeps the output organized, one day at a time. Once data are collected, the *RITHM decoder* is used for parsing, formatting, and subsampling raw data.
