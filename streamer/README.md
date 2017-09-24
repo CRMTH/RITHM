@@ -19,7 +19,7 @@ You should replace the "keywords1.kws" file with a new file that includes the pa
 ### Running the streamer:
 The streamer can be run within a graphical interface for testing, if desired. Generally, the streamer should be run from a command line interface. Navigate to the streamer directory and use a command like ``nohup python3 streamer.py &``\* if you are using Python 3. When activated, the process will automatically create a "KillSwitch.txt" file in the streamer directory.
 
-**\*** *This particular command generally works in a Unix BASH shell. The "nohup" will keep the process running after you close the terminal or log off (if working remotely).
+**\*** *This particular command generally works in a Unix BASH shell. The "nohup" will keep the process running after you close the terminal or log off (if working remotely).*
 
 ### Stopping the streamer:
 In order to safely stop the streamer process, simply delete the "KillSwitch.txt" file from the streamer directory. The process will terminate as soon as the next tweet is delivered. If you kill the streamer process in other ways, the current output data file is likely to become corrupted. 
