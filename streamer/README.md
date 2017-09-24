@@ -30,4 +30,4 @@ You can change input and output directories using the "paths.ini" file. There ar
 
 
 ### Using the data:
-The tweets are dumped into the currently-active output file in JavaScript Object Notation (JSON) format. At midnight (local time), a new file will be created for the next day's data. File names begin with a datetime stamp in a "YYYYMMDDHHMMSS" format. This helps to limit file size and keeps the output organized, one day at a time. Once data are collected, the *RITHM decoder* is used for parsing, formatting, and subsampling raw data.
+The tweets are dumped into the currently-active output file in JavaScript Object Notation (JSON) format. At midnight (local time), a new file will be created for the next day's data. File names begin with a datetime stamp in a "YYYYMMDDHHMMSS" format. This helps to limit file size and keeps the output organized, one day at a time. Once data are collected, the *RITHM parser* is used for decoding, formatting, and subsampling the raw data.
