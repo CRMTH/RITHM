@@ -184,17 +184,21 @@ class decoder:
                     self.keywords[kw] += 1             #add one to the keyword counter
                     #print(kwtext+'\n')
                     hit = 1
-        if '#' not in kw:
+        if '#' not in kw and ' ' not in kw and '*' not in kw:
+            for kw in self.keywords.keys():     #for each keyword in the file
+                if (' #'+ kw+' ') in (' '+kwtext+' '):      #if the keyword is in the text
+                    self.keywords[kw] += 1             #add one to the keyword counter
+                    hit = 1
+                if kw[-1:]=='*':
+                    if (' #'+ kw[:-1]) in (' '+kwtext):      #if the keyword is in the text
+                        self.keywords[kw] += 1             #add one to the keyword counter
+                        hit = 1
+        if '@' not in kw and ' ' not in kw and '*' not in kw:
             for kw in self.keywords.keys():     #for each keyword in the file
                 if (' #'+ kw+' ') in (' '+kwtext+' '):      #if the keyword is in the text
                     self.keywords[kw] += 1             #add one to the keyword counter
                     #print(kwtext+'\n')
                     hit = 1
-                if kw[-1:]=='*':
-                    if (' #'+ kw[:-1]) in (' '+kwtext):      #if the keyword is in the text
-                        self.keywords[kw] += 1             #add one to the keyword counter
-                        #print(kwtext+'\n')
-                        hit = 1
 
         return hit
 
