@@ -1,6 +1,0 @@
-20170618145429	ini	streamer initialized
-20170618145429	kws	(['drinking', 'drink', 'drinks'], ['en'])
-20170618145445	xit	stream killed (on data)
-20170618150526	ini	streamer initialized
-20170618150526	kws	(['drank', 'drink', 'drinking', 'drinks', 'drunk'], ['en'])
-20170618150542	xit	stream killed (on data)
