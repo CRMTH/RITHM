@@ -1,5 +1,5 @@
 ## Real-time Infoveillance of Twitter Health Messages (RITHM)
-![MTH logo](http://mth.pitt.edu/sites/all/themes/pitt_cromh/img/CROMH-mark-footer-revised.png)
+![MTH logo](http://mth.pitt.edu/sites/all/themes/pitt_cromh/img/CROMH-mark-revised.png)
 
 __[Center for Research on Media, Technology, and Health](http://mth.pitt.edu/)__
 
