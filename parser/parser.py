@@ -21,17 +21,16 @@ kwMode = False
 for line in open(dir_path+'template.txt'):
     # ignore hashed-out lines and blank lines
     if (line[:1] !='#' and line.strip()!=''):
-        # try to split line into cmd, val pairs using a colon
-        try:
-            cmd = line.split(':')[0].strip().lower()
-            val = str(line.split(':')[1]).strip()
+        # split line into cmd & val pairs using a colon, where appropriate
+        items = line.split(':')
+        if len(items) > 1:
+            cmd = items[0].strip().lower()
+            val = ':'.join(items[1:]).strip()
             cmdval = True
-        # otherwise, treat entire line as val
-        except:
+        else:
             cmd = None
             val = str(line).strip()
             cmdval = False
-            pass
     
         # begin parsing cmd, val pairs into working variables
         if cmdval:
