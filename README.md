@@ -1,11 +1,16 @@
 ## Real-time Infoveillance of Twitter Health Messages (RITHM)
 ![MTH logo](http://mth.pitt.edu/sites/all/themes/pitt_cromh/img/CROMH-mark-revised.png)
 
-__[Center for Research on Media, Technology, and Health](http://mth.pitt.edu/)__
+__[University of Pittsburgh Center for Research on Media, Technology, and Health](http://mth.pitt.edu/)__
 
-_This is the documentation for installing and utilizing the RITHM framework to retrieve and parse Twitter Streaming API data for public health research. An associated mauscript is currently under development and this repository will continue to be updated in parallel. Technical questions can be sent to Jason Colditz (colditzjb@pitt.edu)._
+_This is the documentation for using the RITHM Python framework to work with Twitter Streaming API data for public health research. This code is provided as-is, with no expectation that it will work exactly as you want it to. However, we will do our best to be responsive to reasonable questions/issues posted here, make updates, and provide additional documentation._
 
-___Update (7 Nov. 2017)__ - The Twitter platform has extended the maximum length of tweets from 140 to 280 characters. This has not affected the fidelity of RITHM data and makes negligible difference on overall file sizes. However, please be aware that this may impact the validity of analyses conducted across the transitional period._
+___Update (4 Apr. 2018)__ - Our paper related to RITHM has been accepted for publication at American Journal of Public Health! This paper will provide practical considerations for enhancing the validity of RITHM implementations related to collecting, formatting, and human coding of data. A link will be posted here when the article is published online._
+
+___Update (7 Nov. 2017)__ - The Twitter platform has extended the maximum length of tweets from 140 to 280 characters. This has not affected the fidelity of RITHM data collection and makes negligible difference on overall raw data file sizes. However, please be aware that this may impact the validity of analyses conducted across the transitional period._
+
+### _RITHM setup_
+The RITHM code has been tested on Windows and Linux systems. Additional setup details are forthcoming and will be uploaded as a separate document. This will include a walkthrough for setting up Twitter API access and getting started. If you have experience setting up PIP installation processes, your future contributions will be welcome here (contact us). RITHM is not currently set up for this and it is not among our highest internal priorities at present.
 
 ### _RITHM streamer_
 The [streamer](https://github.com/CRMTH/RITHM/tree/master/streamer) implements the _[Twython](https://github.com/ryanmcgrath/twython)_ package to interface with the Twitter Streaming API. This allows for easy integration of technical updates if Twitter's API changes in the future. In order to access the Twitter API, you need to (1) have a Twitter account and (2) [register](https://apps.twitter.com/) a new application associated with that account. 
