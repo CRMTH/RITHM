@@ -25,6 +25,7 @@
 ### Download RITHM source files
 
 > _git clone_ is the current command line method, I think. It should look something like this:
+
 ```git clone http://github.com/CRMTH/RITHM/```
 
 ### Set up RITHM streamer 
