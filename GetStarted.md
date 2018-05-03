@@ -1,5 +1,5 @@
 # Getting Started
-> This markdown file needs to be updated so that others can get started using RITHM. There is an open [issue](https://github.com/CRMTH/RITHM/issues/12) related to this. For formatting, don't use these quote blocks (they are just here as placeholders). Use heading formats, numbered lists, and links as much as possible (check your markdown cheat sheet).
+> This markdown file needs to be updated so that others can get started using RITHM. There is an open [issue](https://github.com/CRMTH/RITHM/issues/12) related to this. For formatting, don't use these quote blocks (they are just here as placeholders). Use heading formats, numbered lists, and links as much as possible (check your markdown cheat sheet or [here](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)).
 
 ## Setting up Twitter
 > There are a couple links under "RITHM Streamer" in [README.md](https://github.com/CRMTH/RITHM/blob/master/README.md) to get you started with outlining the processes under this heading. Follow those links and document the steps that you took to get the infrastructure set up.
@@ -25,7 +25,7 @@
 ### Download RITHM source files
 
 > _git clone_ is the current command line method, I think. It should look something like this:
->>> git clone http://github.com/CRMTH/RITHM/
+```git clone http://github.com/CRMTH/RITHM/```
 
 ### Set up RITHM streamer 
 
