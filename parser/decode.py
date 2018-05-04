@@ -98,9 +98,9 @@ class decoder:
         except: pass
 
         # Also include any quoted content
-        try: quote = ' ..... '+data['quoted_status']['extended_tweet']['full_text']
+        try: quote = ' ..... "'+data['quoted_status']['extended_tweet']['full_text']+'"'
         except: 
-            try: quote = ' ..... '+data['quoted_status']['text']
+            try: quote = ' ..... "'+data['quoted_status']['text']+'"'
             except: quote = ''
         text = text+quote
 
@@ -140,6 +140,8 @@ class decoder:
         text = text.replace('\\\\u2122' , ' ... ')
         text = text.replace('\\\\u2018' , "'")
         text = text.replace('\\\\u2019' , "'")
+        text = text.replace('\\\\u201c' , '"')
+        text = text.replace('\\\\u201d' , '"')
         text = text.replace("\\'" , "'")
         text = text.replace('\\\\u200d' , '')
         
