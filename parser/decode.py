@@ -133,6 +133,9 @@ class decoder:
         text = re.sub(r' \: \/\/', '://', text)
         text = re.sub(r't . co', 't.co', text)
 
+        # Repair quote on rt
+        #text = re.sub(r'\"rt', 'rt', text)
+
 
         # Formatting common Unicode punctuation
         text = str(text.encode("unicode-escape"))[2:-1].lower()
@@ -148,6 +151,7 @@ class decoder:
         text = text.replace('\\\\u2014' , ' - ')
         text = text.replace('\\\\u' , ' \\\\u')
 
+        # Formatting punctuation oddities
         while '  ' in text:
             text = text.replace('  ' , ' ')
         while '. .' in text:
