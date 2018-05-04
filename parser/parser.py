@@ -44,9 +44,10 @@ for line in open(dir_path+'template.txt'):
                 dirTemp = val
             if cmd == 'dir_out':
                 dirOut = val
-            
-            # set "start" and "stop" date strings to select input files to parse
-            # format is YYYYMMDD, inclusive 
+                
+            # hiMem setting should be based on file size and amount of working memory (i.e., RAM)
+            # If hiMem == True, then full JSON files will be moved to working memory for parsing 
+            # this is faster but more memory intensive. 
             if cmd.lower() in ['memory', 'mem', 'himem']:
                 if val.lower() in ['high', 'fast'] or val in confirm:
                     hiMem = True
