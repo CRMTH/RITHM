@@ -82,9 +82,9 @@ class decoder:
         
         try: text = data['retweeted_status']['extended_tweet']['full_text']
         except: 
-            try: text = data['retweeted_status']['text']
+            try: text = data['extended_tweet']['full_text']
             except: 
-                try: text = data['extended_tweet']['full_text']
+                try: text = data['retweeted_status']['text']
                 except:
                     try: text = data['text']
                     except: text = ''
@@ -98,9 +98,9 @@ class decoder:
         except: pass
 
         # Also include any quoted content
-        try: quote = ' ..... "'+data['quoted_status']['extended_tweet']['full_text']+'"'
+        try: quote = ' ..... '+data['quoted_status']['extended_tweet']['full_text']
         except: 
-            try: quote = ' ..... "'+data['quoted_status']['text']+'"'
+            try: quote = ' ..... '+data['quoted_status']['text']
             except: quote = ''
         text = text+quote
 
