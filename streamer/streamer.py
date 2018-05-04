@@ -4,7 +4,7 @@ Center for Research on Media, Technology, and Health
 University of Pittsburgh
 
 Author:  colditzjb
-Version: 2017-09-23
+Version: 2018-05-04
 
 Python version: 2.7 (tested) & 3.5+ (preferred)
 
