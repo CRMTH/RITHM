@@ -77,11 +77,110 @@ def keyring(infile=indirectory+auth):
             if line[:1] =='#' or line.strip()=='':
                 continue # Ignore comments or blank lines 
             else:
-                if ':' in line:
-                    keys.append(str(line.split(':')[1]).strip())
+                if ': ' in line:
+                    keys.append(str(line.split(': ')[1]).strip())
                 else:
                     keys.append(str(line).strip())
     return keys
+
+
+## Clear log file
+err_count = 0
+def err_clr():
+    global err_count
+    if err_count > 0:
+        err_count = 0
+
+## Exponential backoff
+def back_off(seconds=None):
+    global err_count 
+    if seconds is None:
+        err_count += 1
+        seconds = 2**err_count*30
+    err = 'backing-off (seconds)\t'+str(seconds)
+    err_log(err, code='zzz')
+    time.sleep(seconds)
+
+
+## Post to Sentry
+try:
+    from raven import Client
+    def sentry(msg):
+    
+        t_client = Client(
+            # This is the secret key
+            dsn=keyring[5],
+            
+            # This will appear as the host name in alerts
+            name='Twitter',
+            
+            ignore_exceptions = [
+                    'Http404',
+                    'django.exceptions.*',
+                    TypeError,
+                    ValueError,
+                    ]
+            )
+        t_client.captureMessage(msg)
+    ravenStatus = True
+
+except:
+    ravenStatus = False
+
+
+## Post to log file 
+def err_log(err, code='err', errDir=outdirectory, errPrint=False, sentryPost=ravenStatus):
+    errlog = str(datetime.datetime.today().strftime('%Y%m%d'))+'_log.tsv'
+    timestamp = str(datetime.datetime.today().strftime('%Y%m%d%H%M%S'))
+    err_str = timestamp+'\t'+code+'\t'+err+'\n'
+    errcatch = False
+    if code in ['ini', 'kws', 'zzz', 'xit']:
+        if errPrint: print(err_str)
+        if sentryPost: sentry(err_str)
+        errcatch = True
+        with open(errDir+errlog,'a+') as log:
+            log.write(err_str)
+    else:
+        with open('errors.csv','r') as error_file:
+            reader = csv.reader(error_file)
+            errors = list(reader)
+            for erratum in errors:
+                if erratum[0] in err.lower() or erratum[0] in code:
+                    errcatch = True
+                    errmsg = (timestamp+'\t'+code+'\t'+erratum[2]+' ('+erratum[0]+')'+'\n')
+                    if 'backoff' in erratum[1]:
+                        if errPrint: print(errmsg)
+                        if sentryPost: sentry(err_str)
+                        with open(errDir+errlog,'a+') as log:
+                            log.write(errmsg)
+                        back_off()
+                    elif 'log' in erratum[1]:
+                        if errPrint: print(errmsg)
+                        if sentryPost: sentry(err_str)
+                        with open(errDir+errlog,'a+') as log:
+                            log.write(errmsg)
+                    elif 'pass' in erratum[1]:
+                        if errPrint: print(errmsg)
+                        if sentryPost: sentry(err_str)
+                        pass
+                    else:
+                        if errPrint: print(errmsg)
+                        if sentryPost: sentry(err_str)
+                        with open(errDir+errlog,'a+') as log:
+                            log.write(errmsg+'\tunexpected directive in error file!')
+                        back_off()
+                        pass
+                        
+    if errcatch == False:
+        if errPrint: print(err_str)
+        with open(errDir+errlog,'a+') as log:
+            log.write(err_str)
+            ###The next 3 lines kill the stream when an unanticipated error is encountered
+            #err_log(err='killing stream', code='xit')
+            #global kill
+            #kill=True
+            err_log(err='unanticipated error', code='zzz')
+            back_off()
 
 
 ## Get streaming API search filters
@@ -101,10 +200,12 @@ def getKeywords(kwDirectory=indirectory, lang=lang):
                 pass
             else:
                 keywords.append(term)
-    if len(list(set(keywords))) == 0:
+    keywords = list(set(keywords))
+    err_log(err=str(keywords)+','+str(lang), code='kws')
+    if len(keywords) == 0:
         return False
     else:
-        return sorted(list(set(keywords))), lang
+        return sorted(keywords), lang
 
 ## Set output file
 def set_file(suffix=suffix):
@@ -112,71 +213,8 @@ def set_file(suffix=suffix):
     outfile = outdirectory+datetime.datetime.today().strftime('%Y%m%d%H%M%S')+suffix 
     global oldtime
     oldtime = datetime.datetime.today().strftime('%Y%m%d') 
-    getKeywords(indirectory)
+    #getKeywords(indirectory)
     return outfile, oldtime
-
-## Clear log file
-err_count = 0
-def err_clr():
-    global err_count
-    if err_count > 0:
-        err_count = 0
-
-## Exponential backoff
-def back_off(seconds=None):
-    global err_count 
-    if seconds is None:
-        err_count += 1
-        seconds = 2**err_count*30
-    err = 'backing-off (seconds)\t'+str(seconds)
-    err_log(err, code='zzz')
-    time.sleep(seconds)
-
-## Post to log file 
-def err_log(err, code='err', errDir=outdirectory, errPrint=True):
-    errlog = str(datetime.datetime.today().strftime('%Y%m%d'))+'_log.tsv'
-    timestamp = str(datetime.datetime.today().strftime('%Y%m%d%H%M%S'))
-    err_str = timestamp+'\t'+code+'\t'+err+'\n'
-    errcatch = False
-    if code in ['ini', 'kws', 'zzz', 'xit']:
-        if errPrint: print(err_str)
-        errcatch = True
-        with open(errDir+errlog,'a+') as log:
-            log.write(err_str)
-    else:
-        with open('errors.csv','r') as error_file:
-            reader = csv.reader(error_file)
-            errors = list(reader)
-            for erratum in errors:
-                if erratum[0] in err.lower():
-                    errcatch = True
-                    errmsg = (timestamp+'\t'+code+'\t'+erratum[2]+' ('+erratum[0]+')'+'\n')
-                    if 'backoff' in erratum[1]:
-                        if errPrint: print(errmsg)
-                        with open(errDir+errlog,'a+') as log:
-                            log.write(errmsg)
-                        back_off()
-                    elif 'log' in erratum[1]:
-                        if errPrint: print(errmsg)
-                        with open(errDir+errlog,'a+') as log:
-                            log.write(errmsg)
-                    elif 'pass' in erratum[1]:
-                        if errPrint: print(errmsg)
-                        pass
-                    else:
-                        if errPrint: print(errmsg)
-                        with open(errDir+errlog,'a+') as log:
-                            log.write(errmsg+'\tunexpected directive in error file!')
-                        back_off()
-                        
-    if errcatch == False:
-        if errPrint: print(err_str)
-        with open(errDir+errlog,'a+') as log:
-            log.write(err_str)
-            err_log(err='killing stream', code='xit')
-            global kill
-            kill=True
-
 
 
         
@@ -188,13 +226,15 @@ def setStreamer(KW=getKeywords()):
                 err_log(err='stream terminated by user', code='xit')
                 break
             else:
+                err_log(err='stream connecting', code='ini')
                 stream = MyStreamer(keyring()[0],keyring()[1],keyring()[2],keyring()[3]) 
                 if KW == False:
                     stream.statuses.sample() #Use 1% sample of all Twitter activity
                 elif len(KW[1]) == 0 or KW[1] == False or KW[1] == None:
                     stream.statuses.filter(track=KW[0]) #Keywords, no language                                   
                 else:
-                    stream.statuses.filter(track=KW[0], languages=KW[1]) #Keywords + language                
+                    stream.statuses.filter(track=KW[0], languages=KW[1]) #Keywords + language
+                    
             
         except: #Error handling
             err = str(sys.exc_info()[1])
@@ -215,8 +255,8 @@ class MyStreamer(TwythonStreamer):
                 err_clr()
                 set_file()
                 setStreamer()
-                err_log(err='Streamer running', code='ini')
-                err_log(err=str(getKeywords()), code='kws')
+                #err_log(err='Streamer running', code='ini')
+                #err_log(err=str(getKeywords()), code='kws')
             out_file = open(outfile,"a")
             #decoded = json.loads(data)
             #json.dump(decoded, out_file, indent=0)
@@ -254,8 +294,8 @@ if __name__ == '__main__':
         switch.write('Delete this file to kill the streamer.')
         
     # Logs startup and keywords
-    err_log(err='streamer initialized', code='ini')
-    err_log(err=str(getKeywords()), code='kws')
+    #err_log(err='streamer initialized', code='ini')
+    #err_log(err=str(getKeywords()), code='kws')
 
     # Set new output data file and streamer process
     set_file()
