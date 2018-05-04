@@ -112,7 +112,7 @@ class decoder:
         text = re.sub(r'\(', ' ( ', text)
         text = re.sub(r'\)', ' ) ', text)
         text = re.sub(r'\[', ' [ ', text)
-        text = re.sub(r'\[', ' ] ', text)
+        text = re.sub(r'\]', ' ] ', text)
         text = re.sub(r'\"', ' " ', text)
         text = re.sub(r'\*', ' * ', text)
         text = re.sub(r'\-', ' - ', text)
