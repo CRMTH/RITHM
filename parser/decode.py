@@ -33,21 +33,20 @@ class decoder:
             with open(dirIn+fileName, 'r') as f: 
                 data = f.read().replace('}{','},{')
                 data = '{\"tweet\": ['+data+']}' #creates a list of tweets to be read
-                try: 
-                    fixed = json.loads(data)
-                    f.close() #closes the file 
-                    decoder.jsontocsv(self, fixed, fileName, emojiFile, 
-                                      hiMem=True)
-                #except:
-                #    print('JSON did not parse normally - trying with "strict=False".')
-                #    try: 
-                #        fixed = json.loads(data, strict=False)
-                except: 
-                    traceback.print_exc()
-                    print('JSON failed to parse! - trying with "hiMem=False"') 
+                try: fixed = json.loads(data)
+                except:
+                    #print('JSON did not parse normally - trying with "strict=False".')
+                    #try: 
+                    #    fixed = json.loads(data, strict=False)
+                    #except: 
+                    #    traceback.print_exc()
+                    print(fileName+': JSON failed to parse! - trying with "hiMem=False"') 
                     f.close()
-                    decoder.fixjson(self, dirIn, fileName, hiMem=False, emojiFile=emojiFile) #Try again as hiMem=False
+                    decoder.fixjson(self, dirIn, fileName, hiMem=False, emojiFile=emojiFile)
                     return False
+                f.close() #closes the file 
+                decoder.jsontocsv(self, fixed, fileName, emojiFile, 
+                                  hiMem=True)
                 #return fixed
 
         else:
@@ -81,28 +80,16 @@ class decoder:
     # This text the text portion of the tweet and formats it into a way that we can read it  
     def parseText(self, data):       
         
-        try: text = data['extended_tweet']['full_text']
+        try: text = data['extended_tweet']['full_text'] #REMEMBER TO UPDATE THIS
         except: 
-            try: text = data['retweeted_status']['extended_tweet']['full_text']
-            except: 
-                try: text = data['retweeted_status']['text']
-                except:
-                    try: text = data['text']
-                    except: text = ''
-
-        # Maintain the RT moniker at the beginning 
-        try: 
-            if data['retweeted_status']['text']:
-                try: rt = data['text'].split(':')[0]+' : '
-                except: rt = ''
-                text = rt+text
-        except: pass
+            try: text = data['retweeted_status']['text']
+            except:
+                try: text = data['text']
+                except: text = ''
 
         # Also include any quoted content
-        try: quote = ' ..... "'+data['quoted_status']['extended_tweet']['full_text']+'"'
-        except: 
-            try: quote = ' ..... "'+data['quoted_status']['text']+'"'
-            except: quote = ''
+        try: quote = ' ..... "'+data['quoted_status']['text']+'"'
+        except: quote = ''
         text = text+quote
 
         # Format common punctuation
@@ -113,7 +100,7 @@ class decoder:
         text = re.sub(r'\(', ' ( ', text)
         text = re.sub(r'\)', ' ) ', text)
         text = re.sub(r'\[', ' ] ', text)
-        text = re.sub(r'\[', ' [ ', text)
+        text = re.sub(r'\[', ' ] ', text)
         text = re.sub(r'\"', ' " ', text)
         text = re.sub(r'\*', ' * ', text)
         text = re.sub(r'\-', ' - ', text)
