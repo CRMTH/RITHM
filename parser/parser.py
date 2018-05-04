@@ -21,16 +21,17 @@ kwMode = False
 for line in open(dir_path+'template.txt'):
     # ignore hashed-out lines and blank lines
     if (line[:1] !='#' and line.strip()!=''):
-        # split line into cmd & val pairs using a colon, where appropriate
-        items = line.split(':')
-        if len(items) > 1:
-            cmd = items[0].strip().lower()
-            val = ':'.join(items[1:]).strip()
+        # try to split line into cmd, val pairs using a colon
+        try:
+            cmd = line.split(':')[0].strip().lower()
+            val = str(line.split(':')[1]).strip()
             cmdval = True
-        else:
+        # otherwise, treat entire line as val
+        except:
             cmd = None
             val = str(line).strip()
             cmdval = False
+            pass
     
         # begin parsing cmd, val pairs into working variables
         if cmdval:
@@ -44,9 +45,8 @@ for line in open(dir_path+'template.txt'):
             if cmd == 'dir_out':
                 dirOut = val
             
-            # hiMem setting should be based on file size and amount of working memory (i.e., RAM)
-            # If hiMem == True, then full JSON files will be moved to working memory for parsing 
-            # this is faster but more memory intensive. 
+            # set "start" and "stop" date strings to select input files to parse
+            # format is YYYYMMDD, inclusive 
             if cmd.lower() in ['memory', 'mem', 'himem']:
                 if val.lower() in ['high', 'fast'] or val in confirm:
                     hiMem = True
@@ -65,6 +65,10 @@ for line in open(dir_path+'template.txt'):
             # NEED TO DOCUMENT THIS!
             if cmd == 'combine':
                 combine = val
+                if val.lower() in confirm:
+                    combine = True
+                else:
+                    combine = False
         
             # set the CSV file to use for emoji translations
             # NEED TO DOCUMENT THIS!
@@ -149,5 +153,6 @@ for f in files:
         #    print("Incorrect format: ",f)
         #    continue
 
-c = csvcombine(dirOut, dir_path, dirTemp)
-c.combinecsv(combine, clear)
+if combine:
+    c = csvcombine(dirOut, dir_path, dirTemp)
+    c.combinecsv(combine, clear)
