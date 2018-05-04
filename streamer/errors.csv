@@ -1,7 +1,10 @@
 ERROR STRING,ACTION,DESCRIPTION
-retries exceeded,backoff,connection broken
+retries exceeded,backoff,connection borked
+reset by peer,backoff,connection reset 
+valid,log,invalid JSON
 incomplete,log,connection hiccup
 timed out,log,connection hiccup
 decode,log,formatting
 attribute,log,formatting
 length,pass,keep alive ping
+200,pass,connected
