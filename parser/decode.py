@@ -33,20 +33,21 @@ class decoder:
             with open(dirIn+fileName, 'r') as f: 
                 data = f.read().replace('}{','},{')
                 data = '{\"tweet\": ['+data+']}' #creates a list of tweets to be read
-                try: fixed = json.loads(data)
-                except:
-                    #print('JSON did not parse normally - trying with "strict=False".')
-                    #try: 
-                    #    fixed = json.loads(data, strict=False)
-                    #except: 
-                    #    traceback.print_exc()
-                    print(fileName+': JSON failed to parse! - trying with "hiMem=False"') 
+                try: 
+                    fixed = json.loads(data)
+                    f.close() #closes the file 
+                    decoder.jsontocsv(self, fixed, fileName, emojiFile, 
+                                      hiMem=True)
+                #except:
+                #    print('JSON did not parse normally - trying with "strict=False".')
+                #    try: 
+                #        fixed = json.loads(data, strict=False)
+                except: 
+                    traceback.print_exc()
+                    print(fileName+' : JSON failed to parse! - trying with "hiMem=False"') 
                     f.close()
                     decoder.fixjson(self, dirIn, fileName, hiMem=False, emojiFile=emojiFile)
                     return False
-                f.close() #closes the file 
-                decoder.jsontocsv(self, fixed, fileName, emojiFile, 
-                                  hiMem=True)
                 #return fixed
 
         else:
