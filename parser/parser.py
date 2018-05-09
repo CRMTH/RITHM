@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import time, os 
-#import re, sys
+import os
+import sys
 from decode import decoder
-from combine import csvcombine
+#from combine import csvcombine
 
 dir_path = './' #Default path 
 confirm = ['true','yes','1'] #Possible responses to indicate "True"
@@ -17,10 +17,23 @@ except:
               'Setting dir_path to: ', dir_path)
     input('Press Enter to continue...')
 
+template = 'template.ini'
+
+if len(sys.argv) > 1: #If command line arguments were passed
+    i = 0
+    for arg in sys.argv:
+        if arg.lower() == '-f': # '-f' indicates template file input
+            template = str(sys.argv[i+1])
+        if arg.lower() == '-d': # '-d' indicates start/end dates
+            start = int(sys.argv[i+1])
+            end = int(sys.argv[i+2])
+        i = i+1
+
+
 kwMode = False 
-for line in open(dir_path+'template.txt'):
+for line in open(dir_path+template):
     # ignore hashed-out lines and blank lines
-    if (line[:1] !='#' and line.strip()!=''):
+    if (line.strip()[:1] !='#' and line.strip()!=''):
         # try to split line into cmd, val pairs using a colon
         try:
             cmd = line.split(':')[0].strip().lower()
@@ -44,10 +57,9 @@ for line in open(dir_path+'template.txt'):
                 dirTemp = val
             if cmd == 'dir_out':
                 dirOut = val
-                
-            # hiMem setting should be based on file size and amount of working memory (i.e., RAM)
-            # If hiMem == True, then full JSON files will be moved to working memory for parsing 
-            # this is faster but more memory intensive. 
+            
+            # set "start" and "stop" date strings to select input files to parse
+            # format is YYYYMMDD, inclusive 
             if cmd.lower() in ['memory', 'mem', 'himem']:
                 if val.lower() in ['high', 'fast'] or val in confirm:
                     hiMem = True
@@ -57,9 +69,9 @@ for line in open(dir_path+'template.txt'):
 
             # set "start" and "stop" date strings to select input files to parse
             # format is YYYYMMDD, inclusive 
-            if cmd.lower() in ['start','begin', 'first']:
+            if cmd in ['start','begin', 'first'] and not start:
                 start = int(val)
-            if cmd.lower() in ['stop','end', 'last']:
+            if cmd in ['stop','end', 'last'] and not end:
                 end = int(val)
     
             # set combine to dictate how output files are combined
@@ -95,7 +107,6 @@ for line in open(dir_path+'template.txt'):
                 else:
                     geo = False
                     
-        
             # set "test" variable (not yet implemented)
             if cmd == 'test':
                 if val.lower() in confirm:
@@ -137,10 +148,12 @@ if clear in ['true','1','yes','clear']:
     for f in sorted(os.listdir(dirOut)):
         os.remove(dirOut+f)
 
+#t = str(time.time())
+
 # read data files in dirIn
-files = sorted(os.listdir(dirIn))
+files = os.listdir(dirIn)
+files.sort()
 print("\nREADING TWEETS FROM " + str(start) + ' to ' + str(end) +'\n')
-t = str(time.time())
 for f in files:
     if f[-5:] =='.json':
         #try:
@@ -153,7 +166,8 @@ for f in files:
         #except:
         #    print("Incorrect format: ",f)
         #    continue
-
+"""
 if combine:
     c = csvcombine(dirOut, dir_path, dirTemp)
     c.combinecsv(combine, clear)
+"""
