@@ -8,7 +8,7 @@ The *RITHM parser* is built in/for Python 3.5+ and not tested in earlier Python 
 The "parser.py" reads commands from a template file ("template.txt" by default) and passess arguments to "decode.py" and other ancillary program files for data processing. After updating the template file, simply run "parser.py" to parse data. 
 
 ### Basic settings:
-The "template.txt" file provides a range of options for customization.  
+The "template.par" file provides a range of options for customization.  
 
 #### Memory considerations and data handling:
 As the raw data files can become quite large (up to several GB per file/day), we have included options to read files in "high memory" or "low memory" modes. *High memory* mode loads an entire raw file into working memory before extracting data. This is time efficient but memory intensive for large files. *Low memory* mode processes one tweet at a time from the raw file, which is considerably slower but may be necessary on machines with limited working memory. If a file fails to read in high memory mode, the parser will attempt to use low memory mode for that particular file. This overcomes issues of file curruption that might occur if the streamer process was terminated with a partially-written tweet (e.g., power outage or system reboot caused abrupt streamer termination). 
