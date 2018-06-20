@@ -59,16 +59,18 @@ for line in open(dir_path+template):
     
         # begin parsing cmd, val pairs into working variables
         if cmdval:
+
             # set directories for input, temp, and output
             if cmd == 'dir_self':
                 dirSelf = val
             if cmd == 'dir_in':
                 dirIn = val
-            if cmd == 'dir_temp':
-                dirTemp = val
             if cmd == 'dir_out':
                 dirOut = val
-            
+            #if cmd == 'dir_temp':
+            #    dirTemp = val
+
+
             # hiMem settings
             #  
             himemset = ['high', 'hi', 'fast'] + confirm
@@ -161,11 +163,11 @@ for line in open(dir_path+template):
 
 
 # clear EVERYTHING from "dirTemp" and "dirOut"
-if clear in ['true','1','yes','clear']:
-    for f in sorted(os.listdir(dirTemp)):
-        os.remove(dirTemp+f)
-    for f in sorted(os.listdir(dirOut)):
-        os.remove(dirOut+f)
+#if clear in ['true','1','yes','clear']:
+#    for f in sorted(os.listdir(dirTemp)):
+#        os.remove(dirTemp+f)
+#    for f in sorted(os.listdir(dirOut)):
+#        os.remove(dirOut+f)
 
 #t = str(time.time())
 
@@ -178,15 +180,15 @@ for f in files:
         #try:
         if int(f[:8]) >= int(start):
             if int(f[:8]) <= int(end):
-                d = decoder(keywords, dirIn, dirTemp, dirOut, 
+                d = decoder(keywords, dirIn, dirOut, 
                             hiMem, emojiFile)
                 record = d.fixjson(dirIn, f, hiMem, emojiFile)
                 #d.jsontocsv(record,f,geo,emojify, count=0)
         #except:
         #    print("Incorrect format: ",f)
         #    continue
-"""
-if combine:
-    c = csvcombine(dirOut, dir_path, dirTemp)
-    c.combinecsv(combine, clear)
-"""
+
+
+#if combine:
+#    c = csvcombine(dirOut, dir_path, dirTemp)
+#    c.combinecsv(combine, clear)
