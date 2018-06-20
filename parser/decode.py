@@ -7,14 +7,14 @@ class decoder:
     _tweet_infile = 0
     _date_data = {}
 
-    def __init__ (self, keywords, dirIn, dirTemp, dirOut, 
+    def __init__ (self, keywords, dirIn, dirOut, 
                   hiMem, emojiFile):
         self.keywords = {}
         for kw in keywords.keys():
             self.keywords.update({kw.lower() : 0})
         #self.dirIn = dirIn
-        self.dirTemp = dirTemp
-        #self.dirOut = dirOut
+        #self.dirTemp = dirTemp
+        self.dirOut = dirOut
         #self.hiMem = hiMem
         self.emojis = {}
         if emojiFile:
@@ -25,69 +25,146 @@ class decoder:
                     self.emojis.update({emoji[0].lower() : emoji[1]})
         
 
+
+
     # This is the first thing that needs to be done!
     # This esentially cleans up each tweet in the json format and seperates them into their individual tweet data
     # It will return a list at the end containing all the tweets and their data
     def fixjson(self, dirIn, fileName, hiMem, emojiFile, *kargs):
+
+        # This is a work in progress... 
+        def lineparse(self, dirIn, fileName, emojiFile):
+            count = 0
+            tweet = ''
+
+
+            def jsonline(line, tweet, status): #UPDATE THIS
+                #tweet = ''
+
+                if tweet[-1:] in ['[',']','{','}','(',')']:
+                    end = False
+                elif line[:1] in ['[',']','{','}','(',')']:
+                    end = False
+                else:
+                    end = True
+
+                if status in ['first','more']:
+                    tweet = '{'
+                    status = 'working'
+                    
+                elif line.strip() == '}{':
+                    tweet = tweet + '}'
+                    status = 'more'
+
+                elif line.strip() == '}' and end:
+                    tweet = tweet + '}'
+                    status = 'done'
+                                        
+                else:
+                    tweet = tweet+line.strip()
+                    
+                return [tweet, status]
+
+
+            #count = decoder._tweet_infile
+            with open(dirIn+fileName, 'r') as f:
+                #decoder._tweet_infile = 0
+                count = 0
+                errors = 0
+                j = ['','first']
+                for line in f.readlines():
+                    tweet = j[0]
+                    status = j[1]
+                    j = jsonline(line, tweet, status) ### FIX THIS TO CATCH FIRST TWEET
+                    
+                    if j[1] in ['more', 'done']:
+                        tweet = j[0]
+                        try:
+                            dic = json.loads(tweet, strict=False)
+                            kwtext = decoder.parseText(self, dic) # parse the text so that it can be examined
+                            #decoder._tweets_checked += 1 #increment the number of tweets checked 
+                
+                            if decoder.checkForKWs(self, kwtext) == 1: #means that a keyword was found in the tweet
+                                #decoder._tweet_infile += 1
+                                #decoder._tweet_count += 1    #increment the count on the number of tweets printed
+                                if emojiFile:
+                                    kwtext = decoder.emojify(self, kwtext)
+                                decoder.writeToCSV(self, dic, kwtext, fileName, count)
+                                count += 1
+                                if j[1] == 'done':
+                                    f.close()
+                                    return None
+                                
+                        except:
+                            errors += 1
+                            print('\n Count: '+str(count)+
+                                  '\nErrors: '+str(errors)+
+                                  '\nLength: '+str(len(tweet))+
+                                  '\n')
+                            if len(tweet) < 100:
+                                print(tweet)
+                            j = ['','more']
+                            #print(tweet)
+                            #traceback.print_exc()
+                                                        
+                            pass #break ### Point Break when testing
+                f.close()
+                return None
+            
+
+        # hiMem is preffered, when working memory permits
         if hiMem:
+            count = 0
             with open(dirIn+fileName, 'r') as f: 
                 data = f.read().replace('}{','},{')
-                data = '{\"tweet\": ['+data+']}' #creates a list of tweets to be read
+                data = r'{"tweet": ['+data+']}' #creates a list of tweets to be read
                 try: 
-                    fixed = json.loads(data)
+                    fixed = json.loads(data, strict=False)
                     f.close() #closes the file 
-                    decoder.jsontocsv(self, fixed, fileName, emojiFile, 
-                                      hiMem=True)
-                #except:
-                #    print('JSON did not parse normally - trying with "strict=False".')
-                #    try: 
-                #        fixed = json.loads(data, strict=False)
+                    for data in fixed['tweet']: # This grabs each tweet one by one
+                        kwtext = decoder.parseText(self, data) # parse the text so that it can be examined
+                        decoder._tweets_checked += 1 #increment the number of tweets checked
+        
+                        if decoder.checkForKWs(self, kwtext) == 1: #means that a keyword was found in the tweet
+                            decoder._tweet_count += 1    #increment the count on the number of tweets printed
+                            if emojiFile:
+                                kwtext = decoder.emojify(self, kwtext)
+                            decoder.writeToCSV(self, data, kwtext, fileName, count)
+                            count += 1
+                    
                 except: 
                     traceback.print_exc()
                     print(fileName+' : JSON failed to parse! - trying with "hiMem=False"') 
                     f.close()
-                    decoder.fixjson(self, dirIn, fileName, hiMem=False, emojiFile=emojiFile)
+                    try:
+                        decoder.fixjson(self, dirIn, fileName, hiMem=False, emojiFile=emojiFile)
+                    except:
+                        traceback.print_exc()
+                        pass
                     return False
+                    f.close()
                 #return fixed
 
         else:
-            with open(dirIn+fileName, 'r') as f:
-                line = 0
-                decoder._tweet_infile = 0
-                reading = True
-                while reading:
-                    if line == 0:
-                        tweet = ''
-                    else:
-                        tweet = '{'
-                    while("}{" not in tweet):
-                        chunk = f.readline()
-                        tweet += chunk
-                        if chunk == '':
-                            tweet += '}}'
-                            reading = False
-                            break
-                    tweet = tweet[:-2]
-                    try:
-                        dic = json.loads(tweet)
-                        decoder.jsontocsv(self, dic, fileName, emojiFile,
-                                          hiMem=False)
-                    except:
-                        continue
-                    line += 1
+            lineparse(self, dirIn, fileName, emojiFile)
 
 
         
     # This text the text portion of the tweet and formats it into a way that we can read it  
     def parseText(self, data):       
         
+        # Try for extended text of original tweet, if RT'd
         try: text = data['retweeted_status']['extended_tweet']['full_text']
         except: 
+            # Try for extended text of an original tweet
             try: text = data['extended_tweet']['full_text']
-            except: 
+            except:
+                # Try for basic text of original tweet if RT'd 
                 try: text = data['retweeted_status']['text']
                 except:
+                    # Try for basic text of an original tweet
                     try: text = data['text']
+                    # Nothing left to check for
                     except: text = ''
 
         # Maintain the RT moniker at the beginning 
@@ -225,7 +302,7 @@ class decoder:
     def writeToCSV(self, data, text, fn, count):
 
         entities = []
-        outfile = self.dirTemp+str(fn[:14]+'_data.csv')   ######################### <--- update to be more descriptive
+        outfile = self.dirOut+str(fn[:14]+'_data.csv')   ######################### <--- update to be more descriptive
         entities.append('\''+str(data['user']['id']))   #userID
         entities.append(data['user']['screen_name'])#.encode('utf-8')) #user
         try: entities.append(str(int(data['user']['utc_offset'])/3600)) #utc
@@ -261,37 +338,3 @@ class decoder:
                                    'retweetID', 'retweet user', 'retweet count', 
                                    'text', 'date', 'url', 'lat', 'lon'])                    
             saveFile.writerow([entity for entity in entities])
-
-
-    # This needs to take in the record list from the fixjson function and this will split it all up into a happy format for the csv file
-    def jsontocsv(self, record, fileName, emojiFile, hiMem):
-        
-        # This is used to control header rows in output
-        if hiMem: 
-            count = 0
-        else: 
-            count = decoder._tweet_infile
-        
-        # This is the main loop where all the tweets in the record get checked
-        if hiMem:            
-            for data in record['tweet']:        # This grabs each tweet one by one
-                kwtext = decoder.parseText(self, data) # parse the text so that it can be examined
-                decoder._tweets_checked += 1 #increment the number of tweets checked
-
-                if decoder.checkForKWs(self, kwtext) == 1: #means that a keyword was found in the tweet
-                    decoder._tweet_count += 1    #increment the count on the number of tweets printed
-                    if emojiFile:
-                        kwtext = decoder.emojify(self, kwtext)
-                    decoder.writeToCSV(self, data, kwtext, fileName, count)
-                    count += 1
-
-        else:
-            kwtext = decoder.parseText(self, record) # parse the text so that it can be examined
-            decoder._tweets_checked += 1 #increment the number of tweets checked 
-
-            if decoder.checkForKWs(self, kwtext) == 1: #means that a keyword was found in the tweet
-                decoder._tweet_infile += 1
-                decoder._tweet_count += 1    #increment the count on the number of tweets printed
-                if emojiFile:
-                    kwtext = decoder.emojify(self, kwtext)
-                decoder.writeToCSV(self, record, kwtext, fileName, count)
