@@ -13,16 +13,26 @@ that are located within other places, for example:
   freq_out.tokens(text)
   freq_out.LogicMatch(kw, text, matched=False)
   freq_out.TermMatch(kw, text, matched=False)
-  subsample.subsample() --> kw_redux functionality  
+  subsample.subsample() --> kw_redux functionality
 
 """
+# Regex is required
 import re 
 
-# This reformats text so that it is keyword searchable
-def reform(text):
+
+### REFORM FUNCTION
+# 
+# This reformats text so that it is keyword searchable or machine/human readable
+#   "mode" variable options include: 
+#     0 'min' = Only replace commas, tabs, and returns (for CSV compatability) 
+#     1 'kws' = Format for keyword matching (default for search procedures)
+#     2 'mac' = Format for machine processing (basic cleaning and tokenizing)
+#     3 'hum' = Format for maximum human readability (useful for coding)
+###
+def reform(text, lcase=True, mode='kws'):
     
     # Lower case
-    text = text.lower()
+    if lcase: text = text.lower()
     
     # Reformat common Unicode punctuation
     text = text.replace(u'\u2026' , '...')
@@ -85,6 +95,7 @@ def reform(text):
     text = ' '+text+' '
 
     return text
+
 
 
 # This performs matching on text, using boolean test phrases
