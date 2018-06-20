@@ -1,3 +1,5 @@
+# RITHM Streamer 
+
 ### Use:
 The *RITHM streamer* allows you to access and download real-time data from the Twitter Streaming API. It is designed to run constantly and to be resillient against interference from common Twitter API errors.  It will not collect data while not running nor back-up to catch data that it missed. Therefore, it should ideally be used on a machine that will be running uninterrupted for the duration of data collection. Depending on the scope of data collection, common hardware configurations include: virtual machine on a shared/cloud server, dedicated physical machine with a back-up power supply, micro-computer (e.g., Raspberry PI) set to auto-run the code on restart. 
 
