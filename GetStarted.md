@@ -1,18 +1,19 @@
 # Getting Started
 
 ## Setting up RITHM infrastructure
-0. This guide assumes that you already have [Python 3.x](https://www.python.org/downloads/) installed on your system.
+This guide assumes that you already have [Python 3.x](https://www.python.org/downloads/) installed on your system.
 
 ### 1. Install Git client 
-To use the RITHM streamer you must install git, use the link below to install git if you don’t have git already.
+Use Git to get the RITHM files from here to your system. Use the link below to install git if you don’t have already have it (most Linux distros should have it already but Windows machines generally do not).
 > https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
 
 ### 2. Download RITHM source files
-To install the RITHM source files (1.) open the command line, (2.) navigate to the directory that you want the RITHM folder in, and (3.) use the command line below:
+To install the RITHM source files (1.) open the command line, (2.) navigate to the directory that you want the RITHM folder to be in, and (3.) use the command line below:
 > `git clone http://github.com/CRMTH/RITHM/`
+> _Note: The data that you download will default to the `./RITHM/data/` folder, so you may need to find a location where you can store lots of data, or plan to change that setting (more on that later).
 
 ### 3. Download and install Twython
-For the streamer to run, the Twython package must be installed in the Python instance that you are using.~~~loacated within the RITHM folder.~~~ Follow the instructions provided in the link below to donwload and install Twython: 
+For the streamer to run, the Twython package must be installed in the Python instance that you are running.~~~loacated within the RITHM folder.~~~ Follow the instructions provided in the link below to donwload and install Twython: 
 > https://github.com/ryanmcgrath/twython
 
 
