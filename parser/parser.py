@@ -9,6 +9,9 @@ dir_path = './' #Default path
 confirm = ['true','yes','1'] #Possible responses to indicate "True"
 deny = ['false','no','0'] #Possible responses to indicate "False"
 
+hiMem = None
+loMem = None
+
 try: 
     dir_path = os.path.dirname(os.path.realpath(__file__))+'/'
 except: 
@@ -17,19 +20,27 @@ except:
               'Setting dir_path to: ', dir_path)
     input('Press Enter to continue...')
 
-template = 'template.ini'
+template = 'template.par' # Default template file
 
-if len(sys.argv) > 1: #If command line arguments were passed
+if len(sys.argv) > 1: # If command line arguments were passed
     i = 0
-    for arg in sys.argv:
-        if arg.lower() == '-f': # '-f' indicates template file input
-            template = str(sys.argv[i+1])
-        if arg.lower() == '-d': # '-d' indicates start/end dates
-            start = int(sys.argv[i+1])
-            end = int(sys.argv[i+2])
-        i = i+1
+    try:
+        for arg in sys.argv:
+            if arg.lower() in ['-f','-file']: # '-f' indicates template file input (req. 1 file object) 
+                template = str(sys.argv[i+1])
+            if arg.lower() in ['-d','-date','-dates']: # '-d' indicates start/end dates (req. 2 MMDDYYYY objects)
+                start = int(sys.argv[i+1])
+                end = int(sys.argv[i+2])
+            if arg.lower() in ['-h','-hi','-himem','-high','-highmem']: # indicates hiMem=True
+                hiMem = True
+            if arg.lower() in ['-l','-lo','-lomem','-low','-lowmem']: # indicates hiMem=False
+                loMem = True
+            i = i+1
+    except:
+        print ('Command line arguments failed to parse.\n',
+               'Using default '+template+' settings.')
 
-
+### PARSING KEYWORDS AND SETTING VALUES
 kwMode = False 
 for line in open(dir_path+template):
     # ignore hashed-out lines and blank lines
@@ -58,14 +69,22 @@ for line in open(dir_path+template):
             if cmd == 'dir_out':
                 dirOut = val
             
-            # set "start" and "stop" date strings to select input files to parse
-            # format is YYYYMMDD, inclusive 
+            # hiMem settings
+            #  
+            himemset = ['high', 'hi', 'fast'] + confirm
             if cmd.lower() in ['memory', 'mem', 'himem']:
-                if val.lower() in ['high', 'fast'] or val in confirm:
+                if val.lower() in himemset and not hiMem:
                     hiMem = True
                 else:
                     hiMem = False
-                
+            if loMem:
+                hiMem = False
+
+            if hiMem:
+                print('--- hiMem=True')
+            else:
+                print('--- hiMem=False')
+
 
             # set "start" and "stop" date strings to select input files to parse
             # format is YYYYMMDD, inclusive 
@@ -135,7 +154,7 @@ for line in open(dir_path+template):
             else:
                 if val not in keywords.keys():
                     keywords.update({val.strip() : 0})
-                    print(val)            
+                    print(val)
     else:
         continue
 
