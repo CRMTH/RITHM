@@ -5,9 +5,9 @@ __[University of Pittsburgh Center for Research on Media, Technology, and Health
 
 _This is the documentation for using the RITHM software framework to work with real-time Twitter API data for public health research. This code is provided as-is, with no expectation that it will work exactly as you want it to. However, we will do our best to be responsive to reasonable questions/issues posted here, make updates, and provide additional documentation. This is a living project that will be updated from time-to-time._
 
-# Cite it:
+# Citation:
 If you use the RITHM software or resources for your research, please cite our development paper: 
->Colditz JB, Chu K, Emery SL, Larkin CR, James AE, Welling J, Primack BA. (In press). Toward real-time infovellience of Twitter health messages. _American Journal of Public Health_. doi: [10.2105/AJPH.2018.304497](https://doi.org/10.2105/AJPH.2018.304497)
+>Colditz JB, Chu K, Emery SL, Larkin CR, James AE, Welling J, Primack BA. Toward real-time infovellience of Twitter health messages. _American Journal of Public Health_. 2018;108(8). \[Online before print\] doi: [10.2105/AJPH.2018.304497](https://doi.org/10.2105/AJPH.2018.304497)
 
 # About:
 
