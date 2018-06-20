@@ -25,10 +25,10 @@ The parser re-formats raw Twitter data to human-readable format for coding and a
 
 # Project team updates:
 
-_**Update (4 Apr. 2018)** - Our paper related to RITHM has been accepted for publication at American Journal of Public Health! This paper will provide practical considerations for enhancing the validity of RITHM implementations related to collecting, formatting, and human coding of data. A link will be posted here when the article is published online._
+_**4 Apr. 2018** - Our paper related to RITHM has been accepted for publication at American Journal of Public Health! This paper will provide practical considerations for enhancing the validity of RITHM implementations related to collecting, formatting, and human coding of data. A link will be posted here when the article is published online._
 
-_**Update (1 Mar. 2018)** - Our ongoing research is now funded through a grant from the US National Cancer Institute ([R01-CA225773](https://taggs.hhs.gov/Detail/AwardDetail?arg_AwardNum=R01CA225773&arg_ProgOfficeCode=110); PI: Primack)._
+_**1 Mar. 2018** - Our ongoing research is now funded through a grant from the US National Cancer Institute ([R01-CA225773](https://taggs.hhs.gov/Detail/AwardDetail?arg_AwardNum=R01CA225773&arg_ProgOfficeCode=110); PI: Primack)._
 
-_**Update (7 Nov. 2017)** - The Twitter platform has extended the maximum length of tweets from 140 to 280 characters. This has not affected the fidelity of RITHM data collection and makes negligible difference on overall raw data file sizes. However, please be aware that this may impact the validity of analyses conducted across the transitional period._
+_**7 Nov. 2017** - The Twitter platform has extended the maximum length of tweets from 140 to 280 characters. This has not affected the fidelity of RITHM data collection and makes negligible difference on overall raw data file sizes. However, please be aware that this may impact the validity of analyses conducted across the transitional period._
 
-_**Update (1 Apr. 2016)** - We have received our initial start-up award to use the Bridges infrastructure at Pittsburgh Supercomputing Center (XRAC TG-DBS160002; PI: Primack). Future publications [should acknowledge](https://www.psc.edu/allocations/acknowledgement-in-publications) that this work "is supported by NSF award number ACI-1445606, at the Pittsburgh Supercomputing Center (PSC)"_
+_**1 Apr. 2016** - We have received our initial start-up award to use the Bridges infrastructure at Pittsburgh Supercomputing Center (XRAC TG-DBS160002; PI: Primack). Future publications [should acknowledge](https://www.psc.edu/allocations/acknowledgement-in-publications) that this work "is supported by NSF award number ACI-1445606, at the Pittsburgh Supercomputing Center (PSC)"_
