@@ -3,11 +3,11 @@
 ## Setting up Twitter
 
 ### Create a new Twitter user account
-You must have a Twitter account to run the streamer. If you don't already have an account, use the link below to create one.  We strongly recommend using an account that is dedicated to the streamer (i.e., don't use a personal account).
+1. You must have a Twitter account to run the streamer. If you don't already have an account, use the link below to create one.  We strongly recommend using an account that is dedicated to the streamer (i.e., don't use a personal account).
 >https://twitter.com/i/flow/signup?lang=en
 
 ### Create a Twitter developer account
-The next step is to obtain access to Twitter as a developer. Use your Twitter credentials and follow the steps provided in the link below to obtain access.
+2. The next step is to obtain access to Twitter as a developer. Use your Twitter credentials and follow the steps provided in the link below to obtain access.
 >https://developer.twitter.com/en/apply-for-access
 
 ## Setting up RITHM
