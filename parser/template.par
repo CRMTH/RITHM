@@ -1,0 +1,70 @@
+### RITHM Parser Template --------------------------------------------------------
+# This is a basic template file that is used to parse raw JSON data
+# into CSV files that you can work with more easily. You can save 
+# multiple versions of these files (e.g., one for each project). This
+# will make it easier to re-trace your steps later. All files should 
+# include the *.par extension (project1.par, project2.par, etc.). 
+
+
+### Directories:
+# DIR_IN should be set to where your JSON data files are located.
+# DIR_OUT should be set to where your CSV files will be saved.
+# You must manually create these directories before running this process;
+# new directories will not be created for you. Always use forward-slashes
+# (i.e., "/" is good) and NOT backslashes (i.e., "\" is no good). Always
+# include a final slash at the end of the directory (or else it will be 
+# treated as part of the file name, which is not a recommended approach).
+###
+DIR_IN: ../data/streamer_raw/
+DIR_OUT: ../data/parser_out/folder_you_made/
+
+
+### Start & End dates:
+# This narrows the date range that you are searching within. For example, 
+# if you only want to look at a subset of all data that have been streamed.
+# End date is inclusive. Date format is required to be: YYYYMMDD
+###
+START: 20180301
+END: 20220228
+
+
+### Emoji:
+# Emoji are delivered in Unicode format, which is not human-readable.
+# Select an "emojilist" file to translate emoji to human-readable text.
+# Leave this parameter blank if you prefer raw Unicode representations.
+###
+EMOJI: emojilist4.csv
+
+
+### Performance Optimization:
+# Value set to "high" will load entire JSON data files into RAM for processing.
+# This results in faster processing but large files may over-run RAM and crash.
+# Set this to "low" if large data files are causing the process to crash.
+###
+MEMORY: high
+
+
+### Clear:
+#  This feature is not currently implemented. Leave this set to "false".
+###
+CLEAR: false
+
+
+### Combine:
+#  This feature is not currently implemented. Leave this set to "false".
+###
+COMBINE: false
+
+
+### Keywords:
+# !!! THIS MUST BE THE FINAL ENTRY IN THE TEMPLATE FILE !!!
+# Enter each keyword on a separate line AFTER the "KEYWORDS:" command.
+# It is generally best to use identical keywords to those that you used
+# to stream the data, unless you have a reason to exclude some.
+# (Boolean searches are not currently implemented in this version.)
+###
+KEYWORDS:
+enter
+your
+keywords
+here
