@@ -256,7 +256,7 @@ class MyStreamer(TwythonStreamer):
                 set_file()
                 setStreamer()
                 #err_log(err='Streamer running', code='ini')
-                #err_log(err=str(getKeywords()), code='kws')
+                err_log(err=str(getKeywords()), code='kws')
             out_file = open(outfile,"a")
             #decoded = json.loads(data)
             #json.dump(decoded, out_file, indent=0)
