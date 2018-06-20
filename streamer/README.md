@@ -16,7 +16,6 @@ You should replace the `keywords1.kws` file with a new file that includes the pa
 
 **Note:** _Additional details about keyword behavior is available in the documentation of Twitter's [Filtered Streams API](https://developer.twitter.com/en/docs/tweets/filter-realtime/guides/basic-stream-parameters#track)._
 
-
 ### Running the streamer:
 The streamer can be run within a graphical interface for testing, if desired. Generally, the streamer should be run from a command line interface. Navigate to the streamer directory and use a command like `nohup python3 streamer.py &`\* if you are using Python 3. When activated, the process will automatically create a "KillSwitch.txt" file in the streamer directory.
 
@@ -25,12 +24,11 @@ The streamer can be run within a graphical interface for testing, if desired. Ge
 ### Stopping the streamer:
 In order to safely stop the streamer process, simply delete the "KillSwitch.txt" file from the streamer directory. The process will terminate as soon as the next tweet is delivered. If you kill the streamer process in other ways, the current output data file is likely to become corrupted. 
 
+### Using the data:
+The tweets are dumped into the currently-active output file in JavaScript Object Notation (JSON) format. At midnight (local time), a new file will be created for the next day's data. File names begin with a datetime stamp in a "YYYYMMDDHHMMSS" format. This helps to limit file size and keeps the output organized, one day at a time. Once data are collected, the _[RITHM parser](https://github.com/CRMTH/RITHM/tree/master/parser)_ is used for decoding, formatting, and subsampling the raw data.
 
 ### Advanced options:
 You can change input and output directories using the "paths.ini" file. There are also some options available toward the top of the "streamer.py" file, which will allow you to further tweak the working directory and language settings. By default, the streamer is limited to tweets that are recognized as English language by Twitter. 
 
 ### Filtering by geographic location:
-Filtering by geographic location is not currently supported in the streamer, though this can be done in post-processing of data that are collected. This is by design, because locations can be inferred using [several advenced methods](https://arxiv.org/ftp/arxiv/papers/1701/1701.03639.pdf) which can not be implemented through the streaming process. 
-
-### Using the data:
-The tweets are dumped into the currently-active output file in JavaScript Object Notation (JSON) format. At midnight (local time), a new file will be created for the next day's data. File names begin with a datetime stamp in a "YYYYMMDDHHMMSS" format. This helps to limit file size and keeps the output organized, one day at a time. Once data are collected, the _[RITHM parser](https://github.com/CRMTH/RITHM/tree/master/parser)_ is used for decoding, formatting, and subsampling the raw data.
+Filtering by geographic location is not supported in the RITHM streamer, though this can be done through post-processing of data that are collected. This is by design, because locations can be inferred using [several advenced methods](https://arxiv.org/ftp/arxiv/papers/1701/1701.03639.pdf) which can not be implemented through Twitter's native streaming process. When working with geographically reduced data, is important to report estimates of [sensitivity (recall)](https://en.wikipedia.org/wiki/Precision_and_recall) among the universe of other relevant tweets that were unable to be geocoded. 
