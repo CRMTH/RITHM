@@ -30,4 +30,4 @@ Keywords are specified to refine the tweets that are returned. In general, if yo
 
 
 ### Advanced settings:
-_\[This needs to be updated to reflect subsampling and frequency counting.\]
+_\[This needs to be updated to reflect subsampling and frequency counting.\]_
