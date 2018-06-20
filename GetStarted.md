@@ -10,6 +10,7 @@ Use Git to get the RITHM files from here to your system. Use the link below to i
 ### 2. Download RITHM source files
 To install the RITHM source files (1.) open the command line, (2.) navigate to the directory that you want the RITHM folder to be in, and (3.) use the command line below:
 > `git clone http://github.com/CRMTH/RITHM/`
+
 > _Note: The data that you download will default to the `./RITHM/data/` folder, so you may need to find a location where you can store lots of data, or plan to change that setting (more on that later).
 
 ### 3. Download and install Twython
