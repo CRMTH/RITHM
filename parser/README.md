@@ -17,6 +17,8 @@ When you run `parser.py` in command line, the following arguments will override 
 * `-h ` indicates that the process should run in high memory mode
 * `-l ` indicates that the process should run in low memory mode
 
+So, an example command might look like: `python3 parser.py -f template2.par -d 20180101 20181231 -l`
+
 #### Date ranges:
 Date ranges follow a _YYYYMMDD_ format and are inclusive of start and end date. If files are currently being written by a streamer process, it is advisable to set an end date prior to today. Depending on your system settings, file locking protocols may cause the streamer to fail if you try to read from an active file.
 
@@ -25,4 +27,7 @@ As the raw data files can become quite large (up to several GB per file/day), we
 
 #### Keywords:
 Keywords are specified to refine the tweets that are returned. In general, if you use the same keywords from the streamer `*.kws` file, you should retrieve all available results. 
-...
+
+
+### Advanced settings:
+_\[This needs to be updated to reflect subsampling and frequency counting.\]
