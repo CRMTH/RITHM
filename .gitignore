@@ -1,1 +1,3 @@
-# To-do
+# Files to not overwrite on commit
+*.ini
+*.kws
