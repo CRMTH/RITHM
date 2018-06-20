@@ -1,3 +1,5 @@
+# RITHM Parser
+
 ### Use:
 The *RITHM parser* allows you to effectively work with data obtained through the *RITHM streamer*. It converts complex JavaScript Object Notation (JSON) data types to tabular Comma Separated Value (CSV) data types that are easier to work with for analysis. It performs basic text and punctuation tokenization for machine learning approaches (e.g., n-gram text classification, Natural Language Processing) and converts common Unicode representations (e.g., emoji) to a human-readable text format. Several data subsampling approaches are also included.
 
