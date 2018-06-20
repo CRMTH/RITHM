@@ -5,10 +5,6 @@ __[University of Pittsburgh Center for Research on Media, Technology, and Health
 
 _This is the documentation for using the RITHM software framework to work with real-time Twitter data for public health research (and other research also). This code is provided as-is, with no expectation that it will work exactly as you want it to. However, we will do our best to be responsive to reasonable questions/issues posted here, make updates, and provide additional documentation. This is an ongoing project that will be updated from time-to-time._
 
-# Citation:
-If you use the RITHM software or resources for your research, please cite our development paper: 
->Colditz JB, Chu K, Emery SL, Larkin CR, James AE, Welling J, Primack BA. Toward real-time infovellience of Twitter health messages. _American Journal of Public Health_. 2018;108(8). \[Online before print\] doi: [10.2105/AJPH.2018.304497](https://doi.org/10.2105/AJPH.2018.304497)
-
 # Overview:
 
 ### _RITHM setup_
@@ -22,6 +18,9 @@ Once that is all set, please see documentation for running the RITHM streamer, i
 ### _RITHM parser_
 The parser re-formats raw Twitter data to human-readable format for coding and analysis. It includes features for in-depth search and retreival from raw data files, recoding emoji, and data sub-sampling. The documentation is still being developed in the [./parser/](https://github.com/CRMTH/RITHM/tree/master/parser) folder. 
 
+# Citation:
+If you use the RITHM software or resources for your research, please cite our development paper: 
+>Colditz JB, Chu K, Emery SL, Larkin CR, James AE, Welling J, Primack BA. Toward real-time infovellience of Twitter health messages. _American Journal of Public Health_. 2018;108(8). \[Online before print\] doi: [10.2105/AJPH.2018.304497](https://doi.org/10.2105/AJPH.2018.304497)
 
 # Project team updates:
 
