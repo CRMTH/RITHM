@@ -12,7 +12,7 @@ You must have your own Twitter Developer account and Application Programming Int
 
 
 ### Selecting keywords:
-You should replace the `keywords1.kws` file with a new file that includes the particular keywords that you want to search for. Multiple keyword files are supported! Any file in the streamer directory with a `*.kws` extension will be treated as a keyword file. The streamer will check for changes in keyword files at midnight (local time). This allows you to start and stop data collection for particular keywords without interrupting the streamer process. Active keyword listings (combined across all keyword files) are available in **\*\_log.tsv** files that are generally in the **./RITHM/data/streamer_raw/** directory, along with the output data files.
+You should replace the `keywords1.kws` file with a new file that includes the particular keywords that you want to search for. Multiple keyword files are supported! Any file in the streamer directory with a `*.kws` extension will be treated as a keyword file. The streamer will check for changes in keyword files at midnight (local time). This allows you to start and stop data collection for particular keywords without interrupting the streamer process. Active keyword listings (combined across all keyword files) are available in `*_log.tsv` files that are generally in the `./RITHM/data/streamer_raw/` directory, along with the output data files.
 
 **Note:** _Additional details about keyword behavior is available in the documentation of Twitter's [Filtered Streams API](https://developer.twitter.com/en/docs/tweets/filter-realtime/guides/basic-stream-parameters#track)._
 
