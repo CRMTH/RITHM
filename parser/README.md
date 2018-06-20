@@ -13,12 +13,12 @@ The `template.par` file provides a range of options for customization. Each proj
 #### Command line arguments:
 When you run `parser.py` in command line, the following arguments will override settings related to `*.par` files:
 * `-f ` indicates template file input (must be followed by a valid `*.par` file name)
-* `-d ` indicates date range (must be followed by two _**YYYYMMDD**_ formatted dates)
+* `-d ` indicates date range (must be followed by two _YYYYMMDD_ formatted dates)
 * `-h ` indicates that the process should run in high memory mode
 * `-l ` indicates that the process should run in low memory mode
 
 #### Date ranges:
-Date ranges follow a _**YYYYMMDD**_ format and are inclusive of start and end date. If files are currently being written by a streamer process, it is advisable to set an end date prior to today. Depending on your system settings, file locking protocols may cause the streamer to fail if you try to read from an active file.
+Date ranges follow a _YYYYMMDD_ format and are inclusive of start and end date. If files are currently being written by a streamer process, it is advisable to set an end date prior to today. Depending on your system settings, file locking protocols may cause the streamer to fail if you try to read from an active file.
 
 #### Memory considerations and data handling:
 As the raw data files can become quite large (up to several GB per file/day), we have included options to read files in "high memory" or "low memory" modes. *High memory* mode loads an entire raw file into working memory before extracting data. This is time efficient but memory intensive for large files. *Low memory* mode processes one tweet at a time from the raw file, which is considerably slower but may be necessary on machines with limited working memory. If a file fails to read in high memory mode, the parser will attempt to use low memory mode for that particular file. This overcomes issues of file curruption that might occur if the streamer process was terminated with a partially-written tweet (e.g., power outage or system reboot caused abrupt streamer termination). 
