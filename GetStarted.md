@@ -2,8 +2,8 @@
 
 ## Setting up Twitter
 
-### Create a new Twitter user account
-1. You must have a Twitter account to run the streamer. If you don't already have an account, use the link below to create one.  We strongly recommend using an account that is dedicated to the streamer (i.e., don't use a personal account).
+### 1. Create a new Twitter user account
+1. You must have a Twitter account to procees to step 2. If you don't already have an account, use the link below to create one.  We strongly recommend using an account that is dedicated to the streamer (i.e., don't use a personal account).
 >https://twitter.com/i/flow/signup?lang=en
 
 ### Create a Twitter developer account
