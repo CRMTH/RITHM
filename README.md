@@ -7,7 +7,7 @@ _This is the documentation for using the RITHM software framework to work with r
 
 # Overview:
 
-### _Gettting Started_
+### _[Gettting Started](https://github.com/CRMTH/RITHM/blob/master/GetStarted.md)_
 The RITHM code has been tested on Windows and Linux systems. It is designed to run in a Python 3.x environment. In order to set up a RITHM implementation, you will need access to the Twitter API (to connect and collect tweets) and Git (to get the RITHM code from here to the machine that you are running it on). Please see our [Getting Started Guide](https://github.com/CRMTH/RITHM/blob/master/GetStarted.md) for additional details.
 
 ### _[RITHM Streamer](https://github.com/CRMTH/RITHM/tree/master/streamer)_
