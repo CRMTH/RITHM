@@ -1,6 +1,6 @@
 # RITHM Parser
 
-### Use:
+## Basic use:
 The *RITHM parser* allows you to effectively work with data obtained through the *RITHM streamer*. It converts complex JavaScript Object Notation (JSON) data types to tabular Comma Separated Value (CSV) data types that are easier to work with for analysis. It performs basic text and punctuation tokenization for machine learning approaches (e.g., n-gram text classification, Natural Language Processing) and converts common Unicode representations (e.g., emoji) to a human-readable text format. Several data subsampling approaches are also included.
 
 ### Requirements:
@@ -31,5 +31,29 @@ As the raw data files can become quite large (up to several GB per file/day), we
 Keywords are specified to refine the tweets that are returned. In general, if you use the same keywords from the streamer `*.kws` file, you should retrieve all available results. 
 
 
-### Advanced settings:
+## Advanced use:
 _\[This needs to be updated to reflect subsampling and frequency counting.\]_
+
+### Data sub-sampling (documentation in-progress)
+When you run `subsample.py` in command line, the following arguments are used:
+* `-i ` input directory to find parsed `*.csv` (e.g., `../data/parser_out/`)
+* `-o ` output file directory/filename (e.g., `../data/parser_out/subsamples.csv`)
+* `-r ` reduction scalar (0<r<1 is a percentage, r>=1 is a frequency)
+* `-s ` indicates that randomization should be stratified by day
+* `-h ` indicates that randomization should be stratified by hashtag prevalence
+* `-d ` indicates date range (NOT CURRENTLY IMPLEMENTED)
+* `-k ` `*.kws` file to restrict output by keyword matching criteria
+* `-rt` indicates that re-tweets should be included in output (default is no RTs)
+
+#### Basic randomization behavior
+...
+
+#### Stratification behavior
+...
+
+#### _HashSpear_ behavior
+"HashSpear" is shorthand for stratification by _Hashtag prevalence using Spearman correlation_. This method may be used if you want the hashtags in the sub-sample to reflect the hashtags in full set of tweets that were parsed. This option requires three numeric arguments, in this order:
+   1. Number of top hashtags to assess. This should generally include top hashtags that are relevant to the topic under investigation.   
+   2. Spearman coefficient (_Sr_) threshold. The minimum acceptable Spearman coefficient (0>_Sr_>1) to accept the data randomization.
+   3. Iteration ceiling. The maximum number of randomizations to perform to achieve the desired _Sr_ value.
+
