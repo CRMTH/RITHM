@@ -52,8 +52,8 @@ When you run `subsample.py` in command line, the following arguments are used:
 ...
 
 #### _HashSpear_ behavior
-"HashSpear" is shorthand for stratification by _Hashtag prevalence using Spearman correlation_. This method may be used if you want the hashtags in the sub-sample to reflect the hashtags in full set of tweets that were parsed. This option requires three numeric arguments, in this order:
+"HashSpear" is shorthand for stratification by _Hashtag prevalence using Spearman correlations_. This method will ensure that the top hashtags in the sub-sample will reflect the top hashtags in full set of parsed tweets (for content validity). Random subsets of data will be drawn until a desirable correlation coefficient is achieved. This option requires three numeric arguments, in this order:
    1. Number of top hashtags to assess. This should generally include top hashtags that are relevant to the topic under investigation.   
-   2. Spearman coefficient (_Sr_) threshold. The minimum acceptable Spearman coefficient (0>_Sr_>1) to accept the data randomization.
+   2. Spearman coefficient (_Sr_) threshold. The minimum acceptable Spearman coefficient (0>_Sr_>1) needed to accept the data randomization.
    3. Iteration ceiling. The maximum number of randomizations to perform to achieve the desired _Sr_ value.
 
