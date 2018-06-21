@@ -42,7 +42,7 @@ When you run `subsample.py` in command line, the following arguments are used:
 * `-s ` indicates that randomization should be stratified by day
 * `-h ` indicates that randomization should be stratified by hashtag prevalence
 * `-d ` indicates date range (NOT CURRENTLY IMPLEMENTED)
-* `-k ` `*.kws` file to restrict output by keyword matching criteria
+* `-k ` a `*.kws` file to restrict output by keyword matching criteria
 * `-rt` indicates that re-tweets should be included in output (default is no RTs)
 
 #### Basic randomization behavior
