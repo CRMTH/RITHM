@@ -5,9 +5,10 @@
 
 # Settings and templates:
 *.ini
+*.kws
 *.par
 *.var
-*.kws
+*.sub
 
 # Output files:
 *.json
