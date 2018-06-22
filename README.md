@@ -16,7 +16,7 @@ The [streamer](https://github.com/CRMTH/RITHM/tree/master/streamer) implements t
 Once that is all set, please see documentation for running the RITHM streamer, in the [./streamer/](https://github.com/CRMTH/RITHM/tree/master/streamer) folder. 
 
 ### _[RITHM Parser](https://github.com/CRMTH/RITHM/tree/master/parser)_
-The parser re-formats raw Twitter data to human-readable format for coding and analysis. It includes features for in-depth search and retreival from raw data files, recoding emoji, and data sub-sampling. The documentation is still being developed in the [./parser/](https://github.com/CRMTH/RITHM/tree/master/parser) folder. 
+The parser re-formats raw Twitter data to human-readable format for coding and analysis. It includes features for in-depth search and retreival from raw data files, recoding emoji, and data sub-sampling. That documentation is in the [./parser/](https://github.com/CRMTH/RITHM/tree/master/parser) folder. 
 
 # Citation:
 If you use the RITHM software or resources for your research, please cite our development paper: 
