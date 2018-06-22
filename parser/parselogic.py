@@ -13,7 +13,7 @@ that are located within other places, for example:
   freq_out.tokens(text)
   freq_out.LogicMatch(kw, text, matched=False)
   freq_out.TermMatch(kw, text, matched=False)
-  subsample.subsample() --> kw_redux functionality  
+  subsample.subsample() --> kw_redux functionality [DONE!] 
 
 """
 # Regex is required
