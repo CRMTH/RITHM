@@ -1,15 +1,15 @@
-### Files and directories to ignore when doing a Git commit.
+### Files and directories to ignore for Git commits and updates.
 
 # Compiled scripts:
 *.pyc
 
-# Private settings:
+# Settings and templates:
 *.ini
 *.par
 *.var
 *.kws
 
-# Private output:
+# Output files:
 *.json
 *.csv
 
