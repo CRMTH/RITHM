@@ -3,7 +3,7 @@
 
 __[University of Pittsburgh Center for Research on Media, Technology, and Health](http://mth.pitt.edu/)__
 
-_This is the documentation for using the RITHM software framework to work with real-time Twitter data for public health research. This code is provided as-is, with no expectation that it will work exactly as you want it to. However, we will do our best to be responsive to reasonable questions/issues posted here, make updates, and provide additional documentation. This is an ongoing project that will be updated from time-to-time._
+_This is the documentation for using the RITHM software framework to work with real-time Twitter data for public health research. This code is provided as-is, with no expectation that it will work exactly as you want it to. However, we will do our best to be responsive to reasonable questions/issues posted here, make updates, and provide additional documentation. This is an ongoing project and the repository (and documentation) will be updated with new developments._
 
 # Overview:
 
