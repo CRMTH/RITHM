@@ -13,14 +13,14 @@ that are located within other places, for example:
   freq_out.tokens(text)
   freq_out.LogicMatch(kw, text, matched=False)
   freq_out.TermMatch(kw, text, matched=False)
-  subsample.subsample() --> kw_redux functionality
+  subsample.subsample() --> kw_redux functionality  
 
 """
 # Regex is required
 import re 
 
 
-### REFORM FUNCTION
+### REFORMAT FUNCTION
 # 
 # This reformats text so that it is keyword searchable or machine/human readable
 #   "mode" variable options include: 
@@ -29,7 +29,8 @@ import re
 #     2 'mac' = Format for machine processing (basic cleaning and tokenizing)
 #     3 'hum' = Format for maximum human readability (useful for coding)
 ###
-def reform(text, lcase=True, mode='kws'):
+def reformat(text, mode='kws', lcase=True, 
+             emoji='emojilist5.csv'):
     
     # Lower case
     if lcase: text = text.lower()
@@ -108,7 +109,7 @@ def match(test, text):
     def TermMatch(kw, text, matched=False):
     
         # this pads spacing to adjust kw for wildcards
-        def reformat(kw):
+        def spaced(kw):
             if kw[-1] == '*':
                 if kw[0] == '*':
                     kw = kw[1:-1]
@@ -121,12 +122,12 @@ def match(test, text):
             return kw
 
         # test for kw in text
-        if reformat(kw) in text:
+        if spaced(kw) in text:
             matched = True
 
         # test for !kw not in text    
         if kw.strip()[0] == '!':
-            if reformat(kw.strip()[1:]) not in text:
+            if spaced(kw.strip()[1:]) not in text:
                 matched = True
     
         return matched
