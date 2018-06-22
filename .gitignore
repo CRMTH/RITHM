@@ -3,3 +3,7 @@
 *.kws
 *.par
 *.json
+
+
+# Directories to avoid 
+./data/*
