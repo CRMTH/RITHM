@@ -1,9 +1,17 @@
-# Files to not overwrite on commit
+### Files and directories to ignore when doing a Git commit.
+
+# Compiled scripts:
+*.pyc
+
+# Private settings:
 *.ini
-*.kws
 *.par
+*.var
+*.kws
+
+# Private output:
 *.json
+*.csv
 
-
-# Directories to avoid 
+# Directories: 
 ./data/*
