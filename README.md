@@ -24,10 +24,10 @@ If you use the RITHM software or resources for your research, please cite our de
 
 # Project team updates:
 
-_**`4 Apr. 2018`** - Our paper related to RITHM has been accepted for publication at American Journal of Public Health. [This paper](https://doi.org/10.2105/AJPH.2018.304497) provides practical considerations for enhancing the validity and reproducibility of Twitter content analysis._
+_**`4 Apr. 2018`** - [Our research paper](https://doi.org/10.2105/AJPH.2018.304497) related to RITHM development has been accepted for publication at American Journal of Public Health. This paper provides practical considerations for enhancing the validity and reproducibility of Twitter content analysis._
 
-_**`1 Mar. 2018`** - Our ongoing research is now funded through a grant from the US National Cancer Institute ([R01-CA225773](https://taggs.hhs.gov/Detail/AwardDetail?arg_AwardNum=R01CA225773&arg_ProgOfficeCode=110); PI: Primack)._
+_**`1 Mar. 2018`** - Our ongoing research is now funded through a grant from the US National Cancer Institute ([R01-CA225773](https://taggs.hhs.gov/Detail/AwardDetail?arg_AwardNum=R01CA225773&arg_ProgOfficeCode=110); PI: [Primack](https://www.dom.pitt.edu/dgim/faculty_info.aspx/Primack4945))._
 
 _**`7 Nov. 2017`** - The Twitter platform has extended the maximum length of tweets from 140 to 280 characters. This has not affected the fidelity of RITHM data collection and makes negligible difference on overall raw data file sizes. However, this may impact the validity of analyses conducted across the transitional period._
 
-_**`1 Apr. 2016`** - We have received our initial start-up award to use the [Bridges](https://www.psc.edu/bridges) infrastructure at Pittsburgh Supercomputing Center (XRAC TG-DBS160002; PI: Primack). Future publications [should acknowledge](https://www.psc.edu/allocations/acknowledgement-in-publications) that this work "is supported by NSF award number ACI-1445606, at the Pittsburgh Supercomputing Center (PSC)"_
+_**`1 Apr. 2016`** - We received an initial start-up grant to use the [Bridges](https://www.psc.edu/bridges) infrastructure at Pittsburgh Supercomputing Center (XRAC-TG-DBS160002; PI: [Primack](https://www.dom.pitt.edu/dgim/faculty_info.aspx/Primack4945)). Future publications [should acknowledge](https://www.psc.edu/allocations/acknowledgement-in-publications) that this work "is supported by NSF award number ACI-1445606, at the Pittsburgh Supercomputing Center (PSC)."_
