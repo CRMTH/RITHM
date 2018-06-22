@@ -24,7 +24,7 @@ If you use the RITHM software or resources for your research, please cite our de
 
 # Project team updates:
 
-_**`4 Apr. 2018`** - Our paper related to RITHM has been accepted for publication at American Journal of Public Health. This paper will provide practical considerations for enhancing the validity of RITHM implementations related to collecting, formatting, and human coding of data._
+_**`4 Apr. 2018`** - Our paper related to RITHM has been accepted for publication at American Journal of Public Health. [This paper](https://doi.org/10.2105/AJPH.2018.304497) provides practical considerations for enhancing the validity and reproducibility of Twitter content analysis._
 
 _**`1 Mar. 2018`** - Our ongoing research is now funded through a grant from the US National Cancer Institute ([R01-CA225773](https://taggs.hhs.gov/Detail/AwardDetail?arg_AwardNum=R01CA225773&arg_ProgOfficeCode=110); PI: Primack)._
 
