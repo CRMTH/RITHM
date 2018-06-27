@@ -30,7 +30,7 @@ The next step is to obtain access to Twitter as a developer. Use your Twitter cr
 >https://developer.twitter.com/en/apply-for-access
 
 ### 6. Create a Twitter developer app
-The next step is to create an app on Twitter. After creating an app, youwill receive authentication credentials (i.e., digital keys) to connect to the Twitter streaming API.
+The next step is to create an app on Twitter. After creating an app, you will receive authentication credentials (i.e., digital keys) to connect to the Twitter streaming API.
 >https://apps.twitter.com/app/new
 
 ### 7. Save your Twitter app keys 
