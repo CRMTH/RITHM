@@ -36,14 +36,17 @@ _\[This needs to be updated to reflect subsampling and frequency counting.\]_
 
 ### Data sub-sampling (documentation in-progress)
 When you run `subsample.py` in command line, the following arguments are used:
-* `-i ` input directory to find parsed `*.csv` (e.g., `../data/parser_out/`)
-* `-o ` output file directory/filename (e.g., `../data/parser_out/subsamples.csv`)
-* `-r ` reduction scalar (0<r<1 is a percentage, r>=1 is a frequency)
-* `-s ` indicates that randomization should be stratified by day
-* `-h ` indicates that randomization should be stratified by hashtag prevalence
-* `-d ` indicates date range (NOT CURRENTLY IMPLEMENTED)
-* `-k ` a `*.kws` file to restrict output by keyword matching criteria
-* `-rt` indicates that re-tweets should be included in output (default is no RTs)
+* Arguments that direct input/output:
+  * `-i ` (+1 parameter) input directory to find parsed `*.csv` files (e.g., `../data/parser_out/`)
+  * `-o ` (+1 parameter) output file directory & file name (e.g., `../data/parser_out/subsamples.csv`)
+* Arguments that affect the data scope before randomization procedures:
+  * `-d ` (+2 parameters) indicates a date range (NOT CURRENTLY IMPLEMENTED)
+  * `-k ` (+1 parameter) a `*.kws` file to restrict output to keyword matched criteria 
+  * `-rt` indicates that re-tweets should be included (default is no RTs)
+* Arguments that affect the randomization procedures:
+  * `-r ` (+1 parameter) reduction scalar (0<r<1 is a percentage, r>=1 is a frequency)
+  * `-s ` indicates that randomization should be stratified by day (do not use with `-h `)
+  * `-h ` (+3 parameters) indicates that randomization should be stratified by popular hashtag prevalence
 
 #### Basic randomization behavior
 ...
