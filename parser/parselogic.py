@@ -3,37 +3,94 @@
 Created on Tue May 29 20:18:09 2018
 @author: colditzjb
 
-Description: Several of these functions are embedded in different 
-places within the parsing infrastructure. This package is a work 
-in progress, to eventually take the place of the various functions 
-that are located within other places, for example:
-
-  decode.parseText(self, data)
-  decode.checkForKWs(self, kwtext)
-  freq_out.tokens(text)
-  freq_out.LogicMatch(kw, text, matched=False)
-  freq_out.TermMatch(kw, text, matched=False)
-  subsample.subsample() --> kw_redux functionality [DONE!] 
-
 """
-# Regex is required
-import re 
+import re#, csv
 
+
+
+
+
+# Replace unicode emoji and symbols with human-readable text
+global emojis
+emojis = {}
+def emojifile(efile='emojilist.csv'):
+    global emojis
+    with open(efile, 'r') as f:
+        #reader = csv.reader(f)
+        #emoji_list = list(reader)
+        #for emoji in emoji_list:
+        #    emojis.update({emoji[0].lower() : emoji[1]})
+        for l in f:
+            unic=l.split(',')[0].lower()
+            trans=l.split(',')[1]
+            emojis[unic]=trans
+    return None
+
+def emojify(text):
+    global emojis
+    if '\\u' in text.lower():
+        text = text.replace('\\\\U' , '\\\\u')
+        text = text.replace('\\\\u' , ' \\\\u')
+        words = text.split(' ')
+        for word in words:
+            if '\\u' in word:
+                if word in emojis.keys():
+                        words[words.index(word)] = emojis[word]
+        return ' '.join(words)
+    return text
+
+
+# This is a crude, hierarchical way to organize modes
+modes = {'tsv':'1.0',
+         'csv':'1.5',
+         'two':'2.0',
+         'mac':'2.5',
+         'hum':'3.5',
+         'kws':'4.5'}
 
 ### REFORMAT FUNCTION
 # 
 # This reformats text so that it is keyword searchable or machine/human readable
-#   "mode" variable options include: 
-#     0 'min' = Only replace commas, tabs, and returns (for CSV compatability) 
-#     1 'kws' = Format for keyword matching (default for search procedures)
-#     2 'mac' = Format for machine processing (basic cleaning and tokenizing)
-#     3 'hum' = Format for maximum human readability (useful for coding)
+# Format selection relies on bandwidths of float numbers (as above, so below)
+#   "mode" argument options currently include: 
+#     1.0 'tsv' = Only replace tabs, and hard returns (TSV compatability) 
+#     1.5 'csv' = Replace commas, tabs, and hard returns (CSV compatability) 
+#                 This is currently the default for output. 
+#     2.0 'two' = Use O'Connor "Twokenize.py" for formatting
+#     2.5 'mac' = Standard machine processing (buffer spacing for tokenizing)
+#     2.x [TBD] = More machine processing (include modes for stemming, etc.)
+#     3.5 'hum' = Format for maximum human readability (useful for annotation)
+#     4.5 'kws' = Format for keyword matching (default for search procedures)
+#
+#   "lcase" argument is optional. All text will be reduced to lowercase. 
+#   "emoji" argument is optional. Emoji will be recoded if filepath is valid. 
 ###
-def reformat(text, mode='kws', lcase=True, 
-             emoji='emojilist5.csv'):
-    
-    # Lower case
-    if lcase: text = text.lower()
+def reformat(text, mode=1.5, modes=modes, 
+             lcase=False, emoji=None):
+
+    # It's faster to use numbers instead of dictionary matching of text!
+    try:
+        mode = float(mode)
+    except:
+        if mode in modes: # Match strings to values and convert to floats
+            for k, v in modes.items(): 
+                mode = mode.replace(modes[k], modes[v])
+                mode = float(mode)
+        else:
+            mode = mode
+        
+    # Always buffer whitespace for matching text
+    text = ' '+text+' '
+
+    # https://stats.seandolinar.com/collecting-twitter-data-converting-twitter-json-to-csv-ascii/
+    # This was good, in theory, but completely borked file input
+    #text = text.encode('unicode_escape') # THIS BELONGS WITH INPUT PROCEDURES, IF USEFUL 
+
+    # Lower case happens when requested or at "mode" 4+ by default
+    if lcase:
+        text = text.lower()
+    elif mode >= 4:
+        text = text.lower()
     
     # Reformat common Unicode punctuation
     text = text.replace(u'\u2026' , '...')
@@ -46,7 +103,7 @@ def reformat(text, mode='kws', lcase=True,
     text = text.replace(u'\u2014' , ' - ')
     text = text.replace('\\u' , ' \\u') # CHECK THIS
 
-    ### WE SHOULD UPDATE THE REST AS text.replace() IF FASTER?
+    ### WE MIGHT SPEED UP THE REST AS text.replace() INSTEAD OF re.sub()
     # Format common punctuation and buffer with spaces
     text = re.sub('`', "'", text)
     text = re.sub('&amp;', ' & ', text)
@@ -66,10 +123,11 @@ def reformat(text, mode='kws', lcase=True,
     text = re.sub(r'\;', ' ; ', text)
     
     # Commas/returns/tabs get recoded because CSV output
+    # WE MAY WANT TO OUTPUT AS TAB-SEPARATED TO PRESERVE COMMAS (FOR TWOKENIZE)
     text = re.sub(r'\,0', '0', text) #Comma in common number
     text = re.sub(r'\,', ' - ', text)
-    text = re.sub(r'\n', ' --- ', text)
-    text = re.sub(r'\r', ' --- ', text)
+    text = re.sub(r'\n', ' _line_break_ ', text)
+    text = re.sub(r'\r', ' _line_break_ ', text)
     text = re.sub(r'\t', ' ', text)
 
     # Repair hyperlinks
@@ -92,8 +150,8 @@ def reformat(text, mode='kws', lcase=True,
     while '----' in text:
         text = text.replace('----' , '---')
 
-    # Add whitespace for matching
-    text = ' '+text+' '
+
+    # INSERT EMOJIFY ABOUT HERE
 
     return text
 
@@ -173,22 +231,36 @@ def match(test, text):
     ### Returns boolean for a logical keyword test within a given text
     return ParentMatch(test, text)
 
+
 """
-### UNIT TESTING
+### THIS CAME FROM decode.py, AND MIGHT BE IMPORTANT LATER:
+    def checkForKWs(self, kwtext):
+        hit = 0
+        for kw in self.keywords.keys():     #for each keyword in the file
+            if (' '+ kw+' ') in (' '+kwtext+' '):      #if the keyword is in the text
+                self.keywords[kw] += 1             #add one to the keyword counter
+                #print(kwtext+'\n')
+                hit = 1
+            if kw[-1:]=='*':
+                if (' '+ kw[:-1]) in (' '+kwtext):      #if the keyword is in the text
+                    self.keywords[kw] += 1             #add one to the keyword counter
+                    #print(kwtext+'\n')
+                    hit = 1
+        if '#' not in kw and ' ' not in kw:
+            for kw in self.keywords.keys():     #for each keyword in the file
+                if (' #'+ kw+' ') in (' '+kwtext+' '):      #if the keyword is in the text
+                    self.keywords[kw] += 1             #add one to the keyword counter
+                    hit = 1
+                if kw[-1:]=='*':
+                    if (' #'+ kw[:-1]) in (' '+kwtext):      #if the keyword is in the text
+                        self.keywords[kw] += 1             #add one to the keyword counter
+                        hit = 1
+        if '@' not in kw and ' ' not in kw and '*' not in kw:
+            for kw in self.keywords.keys():     #for each keyword in the file
+                if (' #'+ kw+' ') in (' '+kwtext+' '):      #if the keyword is in the text
+                    self.keywords[kw] += 1             #add one to the keyword counter
+                    #print(kwtext+'\n')
+                    hit = 1
+        return hit
 
-texts = ['THIS is a Generic tweet about vAPing...',
-         'this is a generiC twEEt that mentions JUUL',
-         'when i vape , i prefer juul\u2026',
-         'i am the based vape god , so i juul']
-
-tests = ['vaping & juul',
-         'vape | vaping & juul',
-         'generic | based & vaping | juul',
-         ' vap*',
-         '...']
-         
-for test in tests:
-    print(test)
-    for text in texts:
-        print('  '+text+' - '+str(match(test, reform(text))))
 """
