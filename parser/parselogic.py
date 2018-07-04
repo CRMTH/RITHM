@@ -91,44 +91,60 @@ def reformat(text, mode=1.5, modes=modes,
         text = text.lower()
     elif mode >= 4:
         text = text.lower()
-    
-    # Reformat common Unicode punctuation
-    text = text.replace(u'\u2026' , '...')
-    text = text.replace(u'\u2122' , '...')
-    text = text.replace(u'\u2018' , "'")
-    text = text.replace(u'\u2019' , "'")
-    text = text.replace(u'\u201c' , '"')
-    text = text.replace(u'\u201d' , '"')
-    text = text.replace(u'\u200d' , '')
-    text = text.replace(u'\u2014' , ' - ')
-    text = text.replace('\\u' , ' \\u') # CHECK THIS
 
-    ### WE MIGHT SPEED UP THE REST AS text.replace() INSTEAD OF re.sub()
-    # Format common punctuation and buffer with spaces
-    text = re.sub('`', "'", text)
-    text = re.sub('&amp;', ' & ', text)
-    text = re.sub('&gt;', ' > ', text)
-    text = re.sub('&lt;', ' < ', text)
-    text = re.sub(r'\(', ' ( ', text)
-    text = re.sub(r'\)', ' ) ', text)
-    text = re.sub(r'\[', ' [ ', text)
-    text = re.sub(r'\]', ' ] ', text)
-    text = re.sub(r'\"', ' " ', text)
-    text = re.sub(r'\*', ' * ', text)
-    text = re.sub(r'\-', ' - ', text)
-    text = re.sub(r'\.', ' . ', text)
-    text = re.sub(r'\!', ' ! ', text)
-    text = re.sub(r'\?', ' ? ', text)
-    text = re.sub(r'\:', ' : ', text)
-    text = re.sub(r'\;', ' ; ', text)
-    
+
+
+    text = text.replace('\\\\', '\\') #Fixing backslach escapes
+
     # Commas/returns/tabs get recoded because CSV output
     # WE MAY WANT TO OUTPUT AS TAB-SEPARATED TO PRESERVE COMMAS (FOR TWOKENIZE)
-    text = re.sub(r'\,0', '0', text) #Comma in common number
-    text = re.sub(r'\,', ' - ', text)
-    text = re.sub(r'\n', ' _line_break_ ', text)
-    text = re.sub(r'\r', ' _line_break_ ', text)
-    text = re.sub(r'\t', ' ', text)
+    text = text.replace(',0', '0') #Comma in common number
+    text = text.replace(',', ' - ') #Comma to hyphen
+    text = text.replace('\\n', ' _newline_ ') #Newline
+    text = text.replace('\\r', ' _newline_ ') #Newline
+    text = text.replace('\\t', ' ') #Tab
+
+    # Reformat common punctuation oddities
+    text = text.replace('\\u2026' , '...')
+    text = text.replace('\\u2122' , '...')
+    text = text.replace('\\u2018' , "'") #Slanted left single quote
+    text = text.replace('\\u2019' , "'") #Slanted right single quote
+    text = text.replace('\\\'', "'") #Escaped single quote
+    text = text.replace('`', "'")
+    text = text.replace('\\u201c' , '"') #Slanted left double quotes
+    text = text.replace('\\u201d' , '"') #Slanted right double quotes
+    text = text.replace('\\u200d' , '') #Zero-width character
+    text = text.replace('\\u2014' , '-') #Em-dash
+    #text = text.replace('\\u' , ' \\u') # CHECK THIS
+    text = text.replace('\\xa0', ' ') #Non-breaking space
+    text = text.replace('&nbsp;', ' ') #Non-breaking space
+    text = text.replace('&amp;', '&')
+    text = text.replace('&gt;', '>')
+    text = text.replace('&lt;', '<')
+
+    if mode >= 4:
+        # Buffer common punctuation with spaces for word matching
+        text = text.replace('(', ' ( ')
+        text = text.replace(')', ' ) ')
+        text = text.replace('[', ' [ ')
+        text = text.replace(']', ' ] ')
+        text = text.replace('"', ' " ')
+        text = text.replace("'", " ' ")
+        text = text.replace('*', ' * ')
+        text = text.replace('-', ' - ')
+        text = text.replace('.', ' . ')
+        text = text.replace('!', ' ! ')
+        text = text.replace('?', ' ? ')
+        text = text.replace(':', ' : ')
+        text = text.replace(';', ' ; ')
+        text = text.replace('&', ' & ')
+        text = text.replace('>', ' > ')
+        text = text.replace('<', ' < ')
+        text = text.replace('\\', ' \\')
+        
+        # This is important so that keywords can match hashtagged keywords
+        text = text.replace('#', ' # ')
+        
 
     # Repair hyperlinks
     text = re.sub(r' \: \/\/', '://', text)
@@ -137,18 +153,19 @@ def reformat(text, mode=1.5, modes=modes,
     # Repair quote on rt
     #text = re.sub(r'\"rt', 'rt', text)
     
-
-    # Format punctuation oddities
-    while '  ' in text:
-        text = text.replace('  ' , ' ')
-    while '. .' in text:
-        text = text.replace('. .' , '..')
-    while '....' in text:
-        text = text.replace('....' , '...')
-    while '- -' in text:
-        text = text.replace('- -' , '--')
-    while '----' in text:
-        text = text.replace('----' , '---')
+    # These are for human-readable text formatting only
+    if 3 <= mode < 4:
+    # Format more punctuation oddities
+        while '  ' in text:
+            text = text.replace('  ' , ' ')
+        while '. .' in text:
+            text = text.replace('. .' , '..')
+        while '....' in text:
+            text = text.replace('....' , '...')
+        while '- -' in text:
+            text = text.replace('- -' , '--')
+        while '----' in text:
+            text = text.replace('----' , '---')
 
 
     # INSERT EMOJIFY ABOUT HERE
@@ -231,36 +248,3 @@ def match(test, text):
     ### Returns boolean for a logical keyword test within a given text
     return ParentMatch(test, text)
 
-
-"""
-### THIS CAME FROM decode.py, AND MIGHT BE IMPORTANT LATER:
-    def checkForKWs(self, kwtext):
-        hit = 0
-        for kw in self.keywords.keys():     #for each keyword in the file
-            if (' '+ kw+' ') in (' '+kwtext+' '):      #if the keyword is in the text
-                self.keywords[kw] += 1             #add one to the keyword counter
-                #print(kwtext+'\n')
-                hit = 1
-            if kw[-1:]=='*':
-                if (' '+ kw[:-1]) in (' '+kwtext):      #if the keyword is in the text
-                    self.keywords[kw] += 1             #add one to the keyword counter
-                    #print(kwtext+'\n')
-                    hit = 1
-        if '#' not in kw and ' ' not in kw:
-            for kw in self.keywords.keys():     #for each keyword in the file
-                if (' #'+ kw+' ') in (' '+kwtext+' '):      #if the keyword is in the text
-                    self.keywords[kw] += 1             #add one to the keyword counter
-                    hit = 1
-                if kw[-1:]=='*':
-                    if (' #'+ kw[:-1]) in (' '+kwtext):      #if the keyword is in the text
-                        self.keywords[kw] += 1             #add one to the keyword counter
-                        hit = 1
-        if '@' not in kw and ' ' not in kw and '*' not in kw:
-            for kw in self.keywords.keys():     #for each keyword in the file
-                if (' #'+ kw+' ') in (' '+kwtext+' '):      #if the keyword is in the text
-                    self.keywords[kw] += 1             #add one to the keyword counter
-                    #print(kwtext+'\n')
-                    hit = 1
-        return hit
-
-"""
