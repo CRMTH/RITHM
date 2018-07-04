@@ -3,14 +3,18 @@
 import os
 import sys
 from decode import decoder
-#from combine import csvcombine
 
 dir_path = './' #Default path 
-confirm = ['true','yes','1'] #Possible responses to indicate "True"
-deny = ['false','no','0'] #Possible responses to indicate "False"
+confirm = ['true','yes','y','1'] #Possible responses to indicate "True"
+deny = ['false','none','no','n','0',''] #Possible responses to indicate "False"
 
+# Set these to None so command line parsing works when not defined
 hiMem = None
 loMem = None
+start = None 
+end = None
+logging = None
+
 
 try: 
     dir_path = os.path.dirname(os.path.realpath(__file__))+'/'
@@ -22,18 +26,26 @@ except:
 
 template = 'template.par' # Default template file
 
+
 if len(sys.argv) > 1: # If command line arguments were passed
     i = 0
     try:
         for arg in sys.argv:
-            if arg.lower() in ['-f','-file']: # '-f' indicates template file input (req. 1 file object) 
+            # '-f' indicates template file input (req. 1 file object)
+            if arg.lower() in ['-f','-file']:  
                 template = str(sys.argv[i+1])
-            if arg.lower() in ['-d','-date','-dates']: # '-d' indicates start/end dates (req. 2 MMDDYYYY objects)
+
+            # '-d' indicates start/end dates (req. 2 MMDDYYYY objects)
+            if arg.lower() in ['-d','-date','-dates']:
                 start = int(sys.argv[i+1])
                 end = int(sys.argv[i+2])
-            if arg.lower() in ['-h','-hi','-himem','-high','-highmem']: # indicates hiMem=True
-                hiMem = True
-            if arg.lower() in ['-l','-lo','-lomem','-low','-lowmem']: # indicates hiMem=False
+
+            # DEPRECIATED: indicates hiMem=True
+            #if arg.lower() in ['-h','-hi','-himem','-high','-highmem']:
+            #    hiMem = True
+
+            # indicates hiMem=False
+            if arg.lower() in ['-l','-lo','-lomem','-low','-lowmem']:
                 loMem = True
             i = i+1
     except:
@@ -53,7 +65,7 @@ for line in open(dir_path+template):
         # otherwise, treat entire line as val
         except:
             cmd = None
-            val = str(line).strip()
+            val = str(line).strip()#.lower() #.lower isn't needed here
             cmdval = False
             pass
     
@@ -82,11 +94,6 @@ for line in open(dir_path+template):
             if loMem:
                 hiMem = False
 
-            if hiMem:
-                print('--- hiMem=True')
-            else:
-                print('--- hiMem=False')
-
 
             # set "start" and "stop" date strings to select input files to parse
             # format is YYYYMMDD, inclusive 
@@ -95,67 +102,90 @@ for line in open(dir_path+template):
             if cmd in ['stop','end', 'last'] and not end:
                 end = int(val)
     
-            # set combine to dictate how output files are combined
-            # NEED TO DOCUMENT THIS!
-            if cmd == 'combine':
-                combine = val
-                if val.lower() in confirm:
-                    combine = True
+            # set "mode" variable
+            if cmd in ['mode','parse','parser']:
+                try: mode = float(val)
+                except: mode = str(val)
+
+
+            # set "test" variable
+            if cmd in ['test','testing','log','logging']:
+                if val.lower() in deny:
+                    logging = False
+                elif val.lower() in confirm:
+                    logging = True
+                    from datetime import datetime
+                    from datetime import timedelta
+
                 else:
-                    combine = False
-        
+                    #May want more parameters later
+                    logging = False
+                    from datetime import datetime
+                    from datetime import timedelta
+
+            # set "lcase" variable
+            if cmd in ['lcase', 'lower']:
+                if val.lower() in confirm:
+                    lcase = True
+                else:
+                    lcase = False
+
             # set the CSV file to use for emoji translations
             # NEED TO DOCUMENT THIS!
             if 'emoj' in cmd.lower():
-                emojify = 1 # FIX THIS DEPENDENCY
-                if '.csv' in val:
-                    emojiFile = dir_path+val
+                if val in deny:
+                    emoji = None
+                elif '.csv' in val:
+                    emoji = dir_path+val # MAY NEED TO UPDATE DIRECTORY!
                 else:
-                    emojiFile = None
+                    emoji = None
+
+
+            # DEPRECIATED: set combine to dictate how output files are combined
+            #if cmd == 'combine':
+            #    combine = val
+            #    if val.lower() in confirm:
+            #        combine = True
+            #    else:
+            #        combine = False
     
-            # set "clear" to True, to clear temp files before decoding
-            # TO-DO: clear tempDir and/or outDir separately
-            if cmd.lower() == 'clear':
-                if val.lower() in confirm:
-                    clear = True
-                else:
-                    clear = False
+            # DEPRECIATED: set "clear" to True, to clear temp files before decoding
+            #if cmd.lower() == 'clear':
+            #    if val.lower() in confirm:
+            #        clear = True
+            #    else:
+            #        clear = False
         
-            # set "geo" to True, to retrieve only geotagged tweets
-            if cmd == 'geo':
-                if val.lower() in confirm:
-                    geo = True
-                else:
-                    geo = False
+            # DEPRECIATED: set "geo" to True to retrieve only geotagged tweets
+            #if cmd == 'geo':
+            #    if val.lower() in confirm:
+            #        geo = True
+            #    else:
+            #        geo = False
                     
-            # set "test" variable (not yet implemented)
-            if cmd == 'test':
-                if val.lower() in confirm:
-                    test = True
-                else:
-                    test = False
     
-            # look for the "keywords" command (should be the last command)
+
+            # look for the "keywords" command (should always be last command!)
             # all lines after this will be treated as keyword parameters
             if cmd in ['keywords','kws']:
-                keywords = {}
+                keywords = []
                 if val == '':
                     kwMode = True
                 else:
                     # different types of modes may come in handy later?
                     kwMode = val.lower()
 
-            
 
         # append all remaining lines to the keyword parameter list
         # NEED TO DOCUMENT THIS!
         if kwMode:
             if cmd:
                 # keywords are not read from the initial "keywords" line
+                print('KEYWORDS:')
                 pass
             else:
-                if val not in keywords.keys():
-                    keywords.update({val.strip() : 0})
+                if val not in keywords:
+                    keywords.append(val.strip())
                     print(val)
     else:
         continue
@@ -174,21 +204,46 @@ for line in open(dir_path+template):
 # read data files in dirIn
 files = os.listdir(dirIn)
 files.sort()
-print("\nREADING TWEETS FROM " + str(start) + ' to ' + str(end) +'\n')
+print('START_DATE: '+str(start))
+print('END_DATE:   '+str(end))
+if logging:
+    print('HIMEM_SET:  '+str(hiMem))
+    t0=datetime.now()
+    print('RUN_START:  '+str(t0))
+
 for f in files:
     if f[-5:] =='.json':
         #try:
         if int(f[:8]) >= int(start):
             if int(f[:8]) <= int(end):
                 d = decoder(keywords, dirIn, dirOut, 
-                            hiMem, emojiFile)
-                record = d.fixjson(dirIn, f, hiMem, emojiFile)
+                            hiMem, mode, lcase, emoji, logging)
+                #record = d.fixjson(dirIn, f, hiMem, emojiFile)
+                record = d.fixjson(dirIn, f, hiMem)
+                
+                if logging:
+                    print('\n\n### TWEET FREQUENCIES ###') 
+                    n_tweets = d.n_tweets
+                    print('TWEETS:     '+ str(n_tweets))
+                    n_matches = d.n_matches
+                    print('MATCHES:    '+ str(n_matches))
+                    n_errors = d.n_errors
+                    print('WARNINGS:   '+ str(n_errors))
+                
+                
                 #d.jsontocsv(record,f,geo,emojify, count=0)
         #except:
         #    print("Incorrect format: ",f)
         #    continue
-
-
+if logging:
+    t1 = datetime.now()
+    seconds=timedelta.total_seconds(t1-t0)
+    print('\n\n### RUNTIME TOTALS ###')
+    print('SECONDS:    '+str(seconds))
+    print('MINUTES:    '+str(seconds/60))
+    print('HOURS:      '+str((seconds/60)/60))
+    print('DAYS:       '+str(((seconds/60)/60)/24))
+    
 #if combine:
 #    c = csvcombine(dirOut, dir_path, dirTemp)
 #    c.combinecsv(combine, clear)
