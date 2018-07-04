@@ -1,44 +1,48 @@
-import json, re, csv, traceback
+# -*- coding: utf-8 -*-
+
+import json, csv, traceback
+import parselogic
 
 class decoder:
 
-    _tweets_checked = 0
-    _tweet_count = 0
-    _tweet_infile = 0
-    _date_data = {}
-
+    # MAY WANT TO INPUT SOME OF THESE ARGUMENTS W/IN A DICTIONARY?
     def __init__ (self, keywords, dirIn, dirOut, 
-                  hiMem, emojiFile):
-        self.keywords = {}
-        for kw in keywords.keys():
-            self.keywords.update({kw.lower() : 0})
-        #self.dirIn = dirIn
-        #self.dirTemp = dirTemp
+                  hiMem, mode, lcase, emoji, logging):
+        self.keywords = []
+        for kw in keywords:
+            self.keywords.append(kw)
         self.dirOut = dirOut
-        #self.hiMem = hiMem
-        self.emojis = {}
-        if emojiFile:
-            with open(emojiFile, 'r') as f:
-                reader = csv.reader(f)
-                emoji_list = list(reader)
-                for emoji in emoji_list:
-                    self.emojis.update({emoji[0].lower() : emoji[1]})
+        self.mode = mode
+        self.lcase = lcase
+        self.emoji = emoji
+        self.logging = logging
+        
+        self.n_tweets = 0
+        self.n_matches = 0
+        self.n_errors = 0
+        
+        #self.emojis = {}
+        #if emojiFile:
+        #    with open(emojiFile, 'r') as f:
+        #        reader = csv.reader(f)
+        #        emoji_list = list(reader)
+        #        for emoji in emoji_list:
+        #            self.emojis.update({emoji[0].lower() : emoji[1]})
         
 
 
 
-    # This is the first thing that needs to be done!
-    # This esentially cleans up each tweet in the json format and seperates them into their individual tweet data
-    # It will return a list at the end containing all the tweets and their data
-    def fixjson(self, dirIn, fileName, hiMem, emojiFile, *kargs):
+    # This cleans the JSON format and seperates into individual tweet data
+    # It will return a list of tweets
+    def fixjson(self, dirIn, fileName, hiMem, *kargs):
 
-        # This is a work in progress... 
-        def lineparse(self, dirIn, fileName, emojiFile):
+        # This is always a work in progress... 
+        def lineparse(self, dirIn, fileName):
             count = 0
             tweet = ''
 
 
-            def jsonline(line, tweet, status): #UPDATE THIS
+            def jsonline(line, tweet, status): #UPDATE THIS?
                 #tweet = ''
 
                 if tweet[-1:] in ['[',']','{','}','(',')']:
@@ -66,46 +70,46 @@ class decoder:
                 return [tweet, status]
 
 
-            #count = decoder._tweet_infile
-            with open(dirIn+fileName, 'r') as f:
-                #decoder._tweet_infile = 0
+            with open(dirIn+fileName, 'r', encoding='utf-8') as f:
                 count = 0
                 errors = 0
                 j = ['','first']
                 for line in f.readlines():
                     tweet = j[0]
                     status = j[1]
-                    j = jsonline(line, tweet, status) ### FIX THIS TO CATCH FIRST TWEET
+                    j = jsonline(line, tweet, status) ### FIX THIS TO CATCH FIRST TWEET?
                     
                     if j[1] in ['more', 'done']:
                         tweet = j[0]
                         try:
                             dic = json.loads(tweet, strict=False)
-                            kwtext = decoder.parseText(self, dic) # parse the text so that it can be examined
-                            #decoder._tweets_checked += 1 #increment the number of tweets checked 
-                
-                            if decoder.checkForKWs(self, kwtext) == 1: #means that a keyword was found in the tweet
-                                #decoder._tweet_infile += 1
-                                #decoder._tweet_count += 1    #increment the count on the number of tweets printed
-                                if emojiFile:
-                                    kwtext = decoder.emojify(self, kwtext)
-                                decoder.writeToCSV(self, dic, kwtext, fileName, count)
+                            #kwtext = decoder.parseText(self, dic) # parse the text so that it can be examined
+                            parsed_text = decoder.parseText(self, dic) # parse the text so that it can be examined
+                            parsed_quote = decoder.parseQuote(self, dic) # parse the text so that it can be examined
+                            kwtext = parsed_text+' '+parsed_quote
+                            self.n_tweets += 1
+                            if decoder.checkForKWs(self, kwtext) == True: #means that a keyword was found in the tweet
+                                #if emojiFile:
+                                #    kwtext = decoder.emojify(self, kwtext)
+                                decoder.writeToCSV(self, dic, parsed_text, parsed_quote, fileName, count)
                                 count += 1
                                 if j[1] == 'done':
                                     f.close()
+                                    print('DONE\n')
                                     return None
                                 
                         except:
                             errors += 1
-                            print('\n Count: '+str(count)+
-                                  '\nErrors: '+str(errors)+
-                                  '\nLength: '+str(len(tweet))+
-                                  '\n')
-                            if len(tweet) < 100:
-                                print(tweet)
+                            #print('\n Count: '+str(count)+
+                            #      '\nErrors: '+str(errors)+
+                            #      '\nLength: '+str(len(tweet))+
+                            #      '\n')
+                            #if len(tweet) < 100:
+                            #    print(tweet)
                             j = ['','more']
                             #print(tweet)
-                            #traceback.print_exc()
+                            print('CRITICAL PARSING ERROR?!')
+                            traceback.print_exc() #############
                                                         
                             pass #break ### Point Break when testing
                 f.close()
@@ -114,45 +118,49 @@ class decoder:
 
         # hiMem is preffered, when working memory permits
         if hiMem:
+            self.n_tweets = 0
             count = 0
-            with open(dirIn+fileName, 'r') as f: 
+            with open(dirIn+fileName, 'r', encoding='utf-8') as f: 
                 data = f.read().replace('}{','},{')
                 data = r'{"tweet": ['+data+']}' #creates a list of tweets to be read
                 try: 
                     fixed = json.loads(data, strict=False)
                     f.close() #closes the file 
                     for data in fixed['tweet']: # This grabs each tweet one by one
-                        kwtext = decoder.parseText(self, data) # parse the text so that it can be examined
-                        decoder._tweets_checked += 1 #increment the number of tweets checked
-        
-                        if decoder.checkForKWs(self, kwtext) == 1: #means that a keyword was found in the tweet
-                            decoder._tweet_count += 1    #increment the count on the number of tweets printed
-                            if emojiFile:
-                                kwtext = decoder.emojify(self, kwtext)
-                            decoder.writeToCSV(self, data, kwtext, fileName, count)
+                        self.n_tweets += 1
+                        parsed_text = decoder.parseText(self, data) # parse the text so that it can be examined
+                        parsed_quote = decoder.parseQuote(self, data) # parse the text so that it can be examined
+                        kwtext = parsed_text+' '+parsed_quote
+                        #decoder._tweets_checked += 1 #increment the number of tweets checked
+                        if decoder.checkForKWs(self, kwtext) == True: #means that a keyword was found in the tweet
+                            #decoder._tweet_count += 1    #increment the count on the number of tweets printed
+                            #if emojiFile:
+                            #    kwtext = decoder.emojify(self, kwtext)
+                            decoder.writeToCSV(self, data, parsed_text, parsed_quote, fileName, count)
                             count += 1
                     
                 except: 
-                    traceback.print_exc()
-                    print(fileName+' : JSON failed to parse! - trying with "hiMem=False"') 
+                    #traceback.print_exc()
+                    self.n_tweets = 0
+                    print(fileName+' : HiMem failed! Trying with LoMem...') 
                     f.close()
                     try:
-                        decoder.fixjson(self, dirIn, fileName, hiMem=False, emojiFile=emojiFile)
+                        decoder.fixjson(self, dirIn, fileName, hiMem=False)
                     except:
+                        print(fileName+' : LoMem also failed! See exception.') 
                         traceback.print_exc()
                         pass
                     return False
-                    f.close()
+                    #f.close()
                 #return fixed
 
         else:
-            lineparse(self, dirIn, fileName, emojiFile)
+            lineparse(self, dirIn, fileName)
 
 
         
-    # This text the text portion of the tweet and formats it into a way that we can read it  
+    # This loads the most comprehensive text portion of the tweet  
     def parseText(self, data):       
-        
         # Try for extended text of original tweet, if RT'd
         try: text = data['retweeted_status']['extended_tweet']['full_text']
         except: 
@@ -164,98 +172,54 @@ class decoder:
                 except:
                     # Try for basic text of an original tweet
                     try: text = data['text']
-                    # Nothing left to check for
-                    except: text = ''
+                    except: 
+                        # Nothing left to check for
+                        text = ''
+                        self.n_errors += 1
+                        #print(data)  ##### These appear to be streamer errors ######
+                        ############## THIS COULD BE IMPORTANT!
 
-        # Maintain the RT moniker at the beginning 
-        try: 
-            if data['retweeted_status']['text']:
-                try: rt = data['text'].split(':')[0]+' : '
-                except: rt = ''
-                text = rt+text
-        except: pass
+        # Run parselogic.reformat 
+        #text = parselogic.reformat(text)
 
-        # Also include any quoted content
-        try: quote = ' ..... "'+data['quoted_status']['extended_tweet']['full_text']+'"'
+        
+        text = str(text.encode('unicode-escape'))[2:-1]
+        return text
+
+
+    # This loads the most comprehensive quote portion of the tweet  
+    def parseQuote(self, data):       
+
+        # Try for extended text of quote
+        try: quote = data['quoted_status']['extended_tweet']['full_text']
         except: 
-            try: quote = ' ..... "'+data['quoted_status']['text']+'"'
-            except: quote = ''
-        text = text+quote
+            # Try for basic text of quote
+            try: quote = data['quoted_status']['text']
+            except: 
+                # Nothing left to check for
+                quote = ''
+                #print('parseQuote FAIL')
 
-        # Format common punctuation
-        text = re.sub('`', "'", text)
-        text = re.sub('&amp;', ' & ', text)
-        text = re.sub('&gt;', ' > ', text)
-        text = re.sub('&lt;', ' < ', text)
-        text = re.sub(r'\(', ' ( ', text)
-        text = re.sub(r'\)', ' ) ', text)
-        text = re.sub(r'\[', ' [ ', text)
-        text = re.sub(r'\]', ' ] ', text)
-        text = re.sub(r'\"', ' " ', text)
-        text = re.sub(r'\*', ' * ', text)
-        text = re.sub(r'\-', ' - ', text)
-        text = re.sub(r'\.', ' . ', text)
-        text = re.sub(r'\!', ' ! ', text)
-        text = re.sub(r'\?', ' ? ', text)
-        text = re.sub(r'\:', ' : ', text)
-        text = re.sub(r'\;', ' ; ', text)
+        #if len(quote)>0:
+        #    quote = parselogic.reformat(quote)
         
-        # Commas/returns/tabs get recoded because CSV output
-        text = re.sub(r'\,0', '0', text) #Comma in common number
-        text = re.sub(r'\,', ' ; ', text)
-        text = re.sub(r'\n', ' --- ', text)
-        text = re.sub(r'\r', ' --- ', text)
-        text = re.sub(r'\t', ' ', text)
-
-        # Repair hyperlinks
-        text = re.sub(r' \: \/\/', '://', text)
-        text = re.sub(r't . co', 't.co', text)
-
-        # Repair quote on rt
-        #text = re.sub(r'\"rt', 'rt', text)
+        quote = str(quote.encode('unicode-escape'))[2:-1]
+        return quote
 
 
-        # Formatting common Unicode punctuation
-        text = str(text.encode("unicode-escape"))[2:-1].lower()
-        text = text.replace('\\\\u2026' , ' ... ')
-        text = text.replace('\\\\u2122' , ' ... ')
-        text = text.replace('\\\\u2018' , "'")
-        text = text.replace('\\\\u2019' , "'")
-        text = text.replace('\\\\u201c' , '"')
-        text = text.replace('\\\\u201d' , '"')
-        text = text.replace("\\'" , "'")
-        text = text.replace('\\\\u200d' , '')
-        
-        text = text.replace('\\\\u2014' , ' - ')
-        text = text.replace('\\\\u' , ' \\\\u')
+    # Goes through each keyword in the decoder and checks if it is in the tweet
+    # If there is no keyword then return a 0 to skip over the tweet
+    def checkForKWs(self, kwtext):
+        hit = False
+        formattedtext = parselogic.reformat(kwtext, mode=4.5,
+                                            lcase=True, emoji=None)
+        for kw in self.keywords:
+            if parselogic.match(kw, formattedtext):
+                hit = True
+                self.n_matches += 1
+                break # DOES THIS WORK TO SAVE PROCESSING?
+        return hit
 
-        # Formatting punctuation oddities
-        while '  ' in text:
-            text = text.replace('  ' , ' ')
-        while '. .' in text:
-            text = text.replace('. .' , '..')
-
-        return text
-
-
-    def emojify(self, text):
-        if '\\u' in text:
-            text = text.replace('\\\\u' , ' \\\\u')
-            words = text.split()
-            for word in words:
-                if '\\u' in word:
-                    if word in self.emojis.keys():
-                            words[words.index(word)] = self.emojis[word]
-            return ' '.join(words)
-        return text
-
-    # This clears the counters for everything
-    # Used to gather data on each individual day
-    def clear(self):
-        self._tweet_count = 0
-        self._tweets_checked = 0
-        for kw in self.keywords.keys():
-            self.keywords[kw] = 0   
 
     # Grabs the coordinates from the tweet
     # If the tweet has no coordinates it just leaves it empty
@@ -265,44 +229,12 @@ class decoder:
         except: #if there are no coordinates then exception is called and make coords blank
             return ['','']
 
-    # Goes through each keyword in the decoder and checks if it is in the tweet
-    # If a keyword is in the tweet it will return a 1 so it knows it is to print the tweet in the csv file
-    # If there is no keyword then return a 0 to skip over the tweet
-    def checkForKWs(self, kwtext):
-        hit = 0
-        for kw in self.keywords.keys():     #for each keyword in the file
-            if (' '+ kw+' ') in (' '+kwtext+' '):      #if the keyword is in the text
-                self.keywords[kw] += 1             #add one to the keyword counter
-                #print(kwtext+'\n')
-                hit = 1
-            if kw[-1:]=='*':
-                if (' '+ kw[:-1]) in (' '+kwtext):      #if the keyword is in the text
-                    self.keywords[kw] += 1             #add one to the keyword counter
-                    #print(kwtext+'\n')
-                    hit = 1
-        if '#' not in kw and ' ' not in kw:
-            for kw in self.keywords.keys():     #for each keyword in the file
-                if (' #'+ kw+' ') in (' '+kwtext+' '):      #if the keyword is in the text
-                    self.keywords[kw] += 1             #add one to the keyword counter
-                    hit = 1
-                if kw[-1:]=='*':
-                    if (' #'+ kw[:-1]) in (' '+kwtext):      #if the keyword is in the text
-                        self.keywords[kw] += 1             #add one to the keyword counter
-                        hit = 1
-        if '@' not in kw and ' ' not in kw and '*' not in kw:
-            for kw in self.keywords.keys():     #for each keyword in the file
-                if (' #'+ kw+' ') in (' '+kwtext+' '):      #if the keyword is in the text
-                    self.keywords[kw] += 1             #add one to the keyword counter
-                    #print(kwtext+'\n')
-                    hit = 1
 
-        return hit
-
-
-    def writeToCSV(self, data, text, fn, count):
+    # THIS COULD USE A TEMPLATE FILE FOR BETTER PORTABILITY
+    def writeToCSV(self, data, parsed_text, parsed_quote, fn, count):
 
         entities = []
-        outfile = self.dirOut+str(fn[:14]+'_data.csv')   ######################### <--- update to be more descriptive
+        outfile = self.dirOut+str(fn[:14]+'_data.csv')   # DOCUMENT THIS
         entities.append('\''+str(data['user']['id']))   #userID
         entities.append(data['user']['screen_name'])#.encode('utf-8')) #user
         try: entities.append(str(int(data['user']['utc_offset'])/3600)) #utc
@@ -321,7 +253,10 @@ class decoder:
             entities.append('') #t_id_rt
             entities.append('') #user_rt
             entities.append(0) #rt_count
+        text = parselogic.reformat(parsed_text, mode=1.5, lcase=self.lcase, emoji=self.emoji)
         entities.append(text) #text
+        quote = parselogic.reformat(parsed_quote, mode=1.5, lcase=self.lcase, emoji=self.emoji)
+        entities.append(quote) #text
         date = data['created_at']
         entities.append(date) #date
         entities.append('http://twitter.com/'+str(data['user']['screen_name'])+'/status/'+str(data['id_str'].strip('\''))) #url
@@ -329,12 +264,14 @@ class decoder:
         entities.append(coords[0]) #Lat
         entities.append(coords[1]) #Lon
         
-        
-        with open(outfile,'a') as csvfile:      
+        ### UPDATE TO REMOVE csv.writer DEPENDENCY
+        with open(outfile, 'a') as csvfile:      
             saveFile = csv.writer(csvfile, delimiter=',', lineterminator='\n')        
             if count == 0:
                 saveFile.writerow(['userID', 'username', 'utc off', 'profile created',
                                    'favorites', 'followers', 'following', 'tweets', 'tweetID',
                                    'retweetID', 'retweet user', 'retweet count', 
-                                   'text', 'date', 'url', 'lat', 'lon'])                    
+                                   'text', 'quote', 'date', 'url', 'lat', 'lon'])                    
             saveFile.writerow([entity for entity in entities])
+
+
