@@ -54,8 +54,8 @@ modes = {'tsv':'1.0',
 # Format selection relies on bandwidths of float numbers (as above, so below)
 #   "mode" argument options currently include: 
 #     1.0 'tsv' = Only replace tabs, and hard returns (TSV compatability) 
-#     1.5 'csv' = Replace commas, tabs, and hard returns (CSV compatability) 
 #                 This is currently the default for output. 
+#     1.5 'csv' = Replace commas, tabs, and hard returns (CSV compatability) 
 #     2.0 'two' = Use O'Connor "Twokenize.py" for formatting
 #     2.5 'mac' = Standard machine processing (buffer spacing for tokenizing)
 #     2.x [TBD] = More machine processing (include modes for stemming, etc.)
@@ -65,7 +65,7 @@ modes = {'tsv':'1.0',
 #   "lcase" argument is optional. All text will be reduced to lowercase. 
 #   "emoji" argument is optional. Emoji will be recoded if filepath is valid. 
 ###
-def reformat(text, mode=1.5, modes=modes, 
+def reformat(text, mode=1.0, modes=modes, 
              lcase=False, emoji=None):
 
     # It's faster to use numbers instead of dictionary matching of text!
@@ -98,11 +98,14 @@ def reformat(text, mode=1.5, modes=modes,
 
     # Commas/returns/tabs get recoded because CSV output
     # WE MAY WANT TO OUTPUT AS TAB-SEPARATED TO PRESERVE COMMAS (FOR TWOKENIZE)
-    text = text.replace(',0', '0') #Comma in common number
-    text = text.replace(',', ' - ') #Comma to hyphen
     text = text.replace('\\n', ' _newline_ ') #Newline
     text = text.replace('\\r', ' _newline_ ') #Newline
     text = text.replace('\\t', ' ') #Tab
+
+    if mode == 1.5:
+        text = text.replace(',0', '0') #Comma in common number
+        text = text.replace(',', ' - ') #Comma to hyphen
+
 
     # Reformat common punctuation oddities
     text = text.replace('\\u2026' , '...')
@@ -240,11 +243,35 @@ def match(test, text):
         return matched
 
     ### A placeholder for implementing parentheses in logic syntax later on
-    # parentheses are not currently implemented - don't use them!
+    # Boolean parentheses are not currently implemented - don't use them!
     # this currently defaults to basic LogicMatch() functionality
     def ParentMatch(test, text):
+        # This implements 'return all tweets' behavior at the top-most level
+        if test.strip() == '***':
+            return True
+
+        # This runs LogicMatch and returns the result of that
         return LogicMatch(test, text)
         
-    ### Returns boolean for a logical keyword test within a given text
+    # Returns True/False for a logical keyword test within a given text
     return ParentMatch(test, text)
 
+"""
+### UNIT TESTING
+
+texts = ['THIS is a Generic tweet about vAPing...',
+         'this is a generiC twEEt that mentions JUUL',
+         'when i vape , i prefer juul\u2026',
+         'i am the based vape god , so i juul']
+
+tests = ['vaping & juul',
+         'vape | vaping & juul',
+         'generic | based & vaping | juul',
+         ' vap*',
+         '...']
+         
+for test in tests:
+    print(test)
+    for text in texts:
+        print('  '+text+' - '+str(match(test, reform(text))))
+"""
