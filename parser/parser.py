@@ -204,12 +204,17 @@ for line in open(dir_path+template):
 # read data files in dirIn
 files = os.listdir(dirIn)
 files.sort()
-print('START_DATE: '+str(start))
+print('\n\nSTART_DATE: '+str(start))
 print('END_DATE:   '+str(end))
 if logging:
     print('HIMEM_SET:  '+str(hiMem))
     t0=datetime.now()
     print('RUN_START:  '+str(t0))
+
+N_tweets = 0
+N_matches = 0
+N_warnings = 0
+N_errors = 0
 
 for f in files:
     if f[-5:] =='.json':
@@ -222,13 +227,20 @@ for f in files:
                 record = d.fixjson(dirIn, f, hiMem)
                 
                 if logging:
-                    print('\n\n### TWEET FREQUENCIES ###') 
+                    print('\n# FILE STATS #') 
+                    print('FILE:       '+ str(f))
                     n_tweets = d.n_tweets
+                    N_tweets += n_tweets
                     print('TWEETS:     '+ str(n_tweets))
                     n_matches = d.n_matches
+                    N_matches += n_matches
                     print('MATCHES:    '+ str(n_matches))
+                    n_warnings = d.n_warnings
+                    N_warnings += n_warnings
+                    print('WARNINGS:   '+ str(n_warnings))
                     n_errors = d.n_errors
-                    print('WARNINGS:   '+ str(n_errors))
+                    N_errors += n_errors
+                    print('ERRORS:     '+ str(n_errors))
                 
                 
                 #d.jsontocsv(record,f,geo,emojify, count=0)
@@ -243,6 +255,11 @@ if logging:
     print('MINUTES:    '+str(seconds/60))
     print('HOURS:      '+str((seconds/60)/60))
     print('DAYS:       '+str(((seconds/60)/60)/24))
+    print('\n\n### TOTAL COUNTS ###')
+    print('N_TWEETS:    '+str(N_tweets))
+    print('N_MATCHES:   '+str(N_matches))
+    print('N_WARNINGS:  '+str(N_warnings))
+    print('N_ERRORS:    '+str(N_errors))
     
 #if combine:
 #    c = csvcombine(dirOut, dir_path, dirTemp)
