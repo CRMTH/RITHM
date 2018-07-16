@@ -6,8 +6,9 @@ import parselogic
 class decoder:
 
     # MAY WANT TO INPUT SOME OF THESE ARGUMENTS W/IN A DICTIONARY?
-    def __init__ (self, keywords, dirIn, dirOut, 
-                  hiMem, mode, lcase, emoji, logging):
+    def __init__ (self, keywords, dirIn, dirOut,
+                  hiMem, mode, lcase, emoji, logging,
+                  out_extension='.tsv'):             #Update parser.csv to set extension
         self.keywords = []
         for kw in keywords:
             self.keywords.append(kw)
@@ -19,7 +20,10 @@ class decoder:
         
         self.n_tweets = 0
         self.n_matches = 0
+        self.n_warnings = 0
         self.n_errors = 0
+
+        self.out_extension=out_extension
         
         #self.emojis = {}
         #if emojiFile:
@@ -83,35 +87,35 @@ class decoder:
                         tweet = j[0]
                         try:
                             dic = json.loads(tweet, strict=False)
-                            #kwtext = decoder.parseText(self, dic) # parse the text so that it can be examined
-                            parsed_text = decoder.parseText(self, dic) # parse the text so that it can be examined
-                            parsed_quote = decoder.parseQuote(self, dic) # parse the text so that it can be examined
+                            parsed_text = decoder.parseText(self, dic) # Parse the text so that it can be examined
+                            parsed_quote = decoder.parseQuote(self, dic) # Parse the quote so that it can be examined
                             kwtext = parsed_text+' '+parsed_quote
                             self.n_tweets += 1
-                            if decoder.checkForKWs(self, kwtext) == True: #means that a keyword was found in the tweet
-                                #if emojiFile:
+                            if decoder.checkForKWs(self, kwtext) == True: # Means that a keyword was found in the tweet
+                                #if emojiFile:  # This will be implemented in parselogic.py 
                                 #    kwtext = decoder.emojify(self, kwtext)
                                 decoder.writeToCSV(self, dic, parsed_text, parsed_quote, fileName, count)
                                 count += 1
-                                if j[1] == 'done':
-                                    f.close()
-                                    print('DONE\n')
-                                    return None
+                                #if j[1] == 'done':
+                                #    f.close()
+                                #    print('DONE\n')
+                                #    return None
                                 
                         except:
-                            errors += 1
+                            ### These can be un-commented if you are trying to diagnose errors
+                            ### TO-DO: incorporate error logging here
+                            self.n_errors += 1
                             #print('\n Count: '+str(count)+
                             #      '\nErrors: '+str(errors)+
                             #      '\nLength: '+str(len(tweet))+
                             #      '\n')
-                            #if len(tweet) < 100:
+                            #if len(tweet) < 100: # This catches Twitter API hiccups
                             #    print(tweet)
-                            j = ['','more']
-                            #print(tweet)
-                            print('CRITICAL PARSING ERROR?!')
-                            traceback.print_exc() #############
-                                                        
-                            pass #break ### Point Break when testing
+                            #print(tweet) # This isn't generally useful
+                            #traceback.print_exc() #############
+
+                            j = ['','more'] ### THIS NEEDS UPDATING?
+                            pass #break ### Break here when diagnosing errors
                 f.close()
                 return None
             
@@ -175,7 +179,7 @@ class decoder:
                     except: 
                         # Nothing left to check for
                         text = ''
-                        self.n_errors += 1
+                        self.n_warnings += 1
                         #print(data)  ##### These appear to be streamer errors ######
                         ############## THIS COULD BE IMPORTANT!
 
@@ -234,7 +238,7 @@ class decoder:
     def writeToCSV(self, data, parsed_text, parsed_quote, fn, count):
 
         entities = []
-        outfile = self.dirOut+str(fn[:14]+'_data.csv')   # DOCUMENT THIS
+        outfile = self.dirOut+str(fn[:14]+'_data'+self.out_extension)   # Changed from .csv to .tsv (20180716 JC)
         entities.append('\''+str(data['user']['id']))   #userID
         entities.append(data['user']['screen_name'])#.encode('utf-8')) #user
         try: entities.append(str(int(data['user']['utc_offset'])/3600)) #utc
@@ -266,12 +270,10 @@ class decoder:
         
         ### UPDATE TO REMOVE csv.writer DEPENDENCY
         with open(outfile, 'a') as csvfile:      
-            saveFile = csv.writer(csvfile, delimiter=',', lineterminator='\n')        
+            saveFile = csv.writer(csvfile, delimiter='\t', lineterminator='\n')        
             if count == 0:
                 saveFile.writerow(['userID', 'username', 'utc off', 'profile created',
                                    'favorites', 'followers', 'following', 'tweets', 'tweetID',
                                    'retweetID', 'retweet user', 'retweet count', 
                                    'text', 'quote', 'date', 'url', 'lat', 'lon'])                    
             saveFile.writerow([entity for entity in entities])
-
-
