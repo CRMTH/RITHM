@@ -7,12 +7,7 @@ A command line tool for sub-sampling parsed RITHM data.
 
 """
 import sys
-import parselogic as pl
-
-#data_dir = '/pylon5/db4s82p/jcolditz/twitter/parser_out/vaping_2016-17/' # Include trailing slash
-#kws = ['fentanyl', 'heroin']
-#outfile = 'output/strat_05_nort.csv'
-
+import parselogic
 
 
 class subsample(object):
@@ -22,20 +17,23 @@ class subsample(object):
     
     . 
     """
-    
+    ##### If column numbers change, "*_incol" vars need updating - this dependency 
+    ##### should be fixed so that the process is aware of standard variable names
+    ##### and calculates column numbers accordingly. 
     def __init__(self, data, dirout='', header=True, combine=True,
-                 kw_redux=[], kw_incol=12, rt_ignore=False, rt_incol=9, 
-                 geo_only=False, geo_incol=15):
+                 kw_redux=[], kw_incol=12, quote_incol=13, 
+                 rt_ignore=True, rt_incol=9, 
+                 geo_only=False, geo_incol=16):  
         self.data = data
         self.kw_incol = kw_incol
-        self.returns = {}
-        
+        self.returns = {}                    
+        self.delimit = ','
+
         if len(kw_redux) > 0 or rt_ignore or geo_only: 
             read_tweet=True
         else: 
             read_tweet=False
             
-        
         if type(data) == str:
             # String data should refer to a directory of CSV data files
 
@@ -48,46 +46,80 @@ class subsample(object):
                 files = sorted(os.listdir(data))
             except:
                 raise IOError('String object passed, but it is not a valid directory.')
-
+            i_total = 0
+            i_rt_total = 0
+            i_kw = 0
+            i_rt_kw = 0
             for fn in files:
                 ###### <--- Implement date range constraints about here
-                if fn[-4:] == '.csv':
-                    i = 0
+                if fn[-4:] in ['.csv', '.tsv']:
+                    i_line = 0
                     with open(data+fn, 'r') as infile:
-                        for line in infile.readlines(): # Pull out header row
-                            if i==0 and header:
-                                head = line
+                        for line in infile.readlines():
+                            if i_line==0:
+                                if '\t' in line: self.delimit = '\t' #Determine if TSV file format from 1st line
+
+                            if i_line==0 and header:
+                                head = line #If first line is expected to be a header, save the line as "head"
                             else:
                                 if read_tweet: # If tweets need to be read
-                                    l_list = line.split(',')
+                                    l_list = line.split(self.delimit)
                                     added = False
                                     ignored = False
+                                    is_rt = False
                                     if rt_ignore and len(l_list[rt_incol]) > 0:
+                                        i_rt_total = i_rt_total + 1
+                                        is_rt = True
                                         ignored = True # Ignore RTs
                                     if geo_only and len(l_list[geo_incol]) < 1:
                                         ignored = True # Ignore non-Geocoded
-                                    ##### UPDATE THIS KW_REDUX 
+
                                     if len(kw_redux)>0:
+                                        kw_is_rt = False
                                         for kw in kw_redux:
-                                            text = pl.reformat(l_list[kw_incol], mode='kws', lcase=True)
+                                            # Remember to search text and quoted text!
+                                            text = l_list[kw_incol]+' '+l_list[quote_incol]
+                                            text = parselogic.reformat(text, mode=4.5, lcase=True)
                                             #if kw in text.lower() and not added and not ignored:
-                                            if pl.match(kw, text) and not added and not ignored:
-                                                datadict.setdefault(fn, []).append(line)
-                                                datalines.append(line)
-                                                added = True
+                                            if parselogic.match(kw, text):
+                                                if not added and not ignored:
+                                                    datadict.setdefault(fn, []).append(line)
+                                                    datalines.append(line)
+                                                    added = True
+                                                    i_kw = i_kw + 1
+                                                elif is_rt:
+                                                    kw_is_rt = True
+                                        if kw_is_rt:
+                                            i_kw = i_kw + 1
+                                            i_rt_kw = i_rt_kw + 1
                                     else:
-                                        datadict.setdefault(fn, []).append(line)
-                                        datalines.append(line)
-                                        added = True
+                                        if not added and not ignored:
+                                            datadict.setdefault(fn, []).append(line)
+                                            datalines.append(line)
+                                            added = True
                                 else: # Fast and simple
                                     datadict.setdefault(fn, []).append(line)
                                     datalines.append(line)
-                            i = i + 1
+                            i_line = i_line + 1 #Counting all read lines per file
+                        i_total = i_total + i_line - 1 #Total data lines (-1 for header line)
 
             self.head = head
             self.datadict = datadict
             self.data = datalines
+            print('\n----- FILE TOTALS:')
+            print('Tweets observed:   '+str(i_total))
+            print('Retweets observed: '+str(i_rt_total))
+            print('Original tweets:   '+str(i_total-i_rt_total))
+            
+            if len(kw_redux)>0:
+                print('\n----- KEYWORD-MATCHED:')
+                print('Tweets observed:   '+str(i_kw))
+                print('Retweets observed: '+str(i_rt_kw))
+                print('Original tweets:   '+str(i_kw-i_rt_kw))
 
+            if rt_ignore: print('\nIGNORING RETWEETS...\n')
+
+            print('Tweets in sample:  '+str(len(datalines)))
 
 
 
@@ -99,8 +131,11 @@ class subsample(object):
         data = self.data
 
         import random
-        
-        try: 
+
+        print('Tweets available:  '+str(len(data)))
+        print('Reduction value:   '+str(reduce))
+
+        try:
             reduce = float(reduce)
             if reduce <= 0:
                 # Randomization without reduction
@@ -114,6 +149,7 @@ class subsample(object):
                 if reduce > len(data):
                     reduce = len(data)
                 data = random.sample(data, int(reduce))
+            print('Tweets retained:   '+str(len(data)))
             return data
         except: 
             raise ValueError('Reduce argument must be numeric.')
@@ -123,15 +159,29 @@ class subsample(object):
     # If reduce > 1, the result is an equal number of tweets per day
     def strat(self, reduce=0):
         datadict = self.datadict
+        files = []
         s = []
         flat_list = []
             
+        print('\nSTRATIFICATION ACTIVE...\n')
+
         for k, v in datadict.items():
-                s.append(subsample(v).rand(reduce))
+            files.append(k)
+        for f in sorted(files):
+            print('----- '+f)
+            s.append(subsample(datadict[f]).rand(reduce))
+            print('\n')
+        #for k, v in datadict.items():
+        #    print('----- '+str(k))
+        #    s.append(subsample(v).rand(reduce))
+        #    print('\n')
+            
         for sublist in s:
             for item in sublist:
                 flat_list.append(item)
         data = flat_list
+        
+        print('\n\nTotal retained:    '+str(len(data)))
         return data
                 
     # This provides a subsample where top hashtags reflect population trends
@@ -147,8 +197,8 @@ class subsample(object):
             hashtop = {}
             for line in data:
                 # Get tweet text:
-                text = line.lower().split(',')[kw_incol]
-                text = re.sub(r'\\',' ', text)
+                text = line.lower().split(self.delimit)[kw_incol]
+                text = re.sub('\\',' ', text) # <-- Is this necessary?
                 # Get unique hashtags from within tweet text:
                 hashtags = list(set(part[1:] for part in text.split() if part.startswith('#')))
                 # Remove empty entry, if present
@@ -335,7 +385,7 @@ if len(sys.argv) > 1: # If command line arguments were passed
 
 if kws:
     try:
-        with open(kw_file, 'r') as kf:
+        with open(data_dir+kw_file, 'r') as kf:
             for k in kf:
                 if k.strip() not in ['','#']:
                     kw_redux.append(k.strip())
@@ -361,3 +411,4 @@ with open(data_dir+outfile, 'a+') as outfile:
     #for line in y['data']: #This might be needed for one of the approaches?
     for line in redux2:
         outfile.write(line)
+
