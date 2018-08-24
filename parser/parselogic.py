@@ -63,10 +63,11 @@ modes = {'tsv':'1.0',
 #     4.5 'kws' = Format for keyword matching (default for search procedures)
 #
 #   "lcase" argument is optional. All text will be reduced to lowercase. 
+#   "ht_include" argument is optional. Hashtags will be included w/ basic keywords. 
 #   "emoji" argument is optional. Emoji will be recoded if filepath is valid. 
 ###
 def reformat(text, mode=1.0, modes=modes, 
-             lcase=False, emoji=None):
+             lcase=False, ht_include=True, emoji=None):
 
     # It's faster to use numbers instead of dictionary matching of text!
     try:
@@ -126,6 +127,8 @@ def reformat(text, mode=1.0, modes=modes,
     text = text.replace('&lt;', '<')
 
     if mode >= 4:
+        ht_include = True
+        
         # Buffer common punctuation with spaces for word matching
         text = text.replace('(', ' ( ')
         text = text.replace(')', ' ) ')
@@ -136,6 +139,7 @@ def reformat(text, mode=1.0, modes=modes,
         text = text.replace('*', ' * ')
         text = text.replace('-', ' - ')
         text = text.replace('.', ' . ')
+        text = text.replace(',', ' , ')
         text = text.replace('!', ' ! ')
         text = text.replace('?', ' ? ')
         text = text.replace(':', ' : ')
@@ -144,9 +148,10 @@ def reformat(text, mode=1.0, modes=modes,
         text = text.replace('>', ' > ')
         text = text.replace('<', ' < ')
         text = text.replace('\\', ' \\')
-        
+    
+    if ht_include:
         # This is important so that keywords can match hashtagged keywords
-        text = text.replace('#', ' # ')
+        text = text.replace('#', '# ')
         
 
     # Repair hyperlinks
