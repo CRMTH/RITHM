@@ -4,7 +4,7 @@ Created on Tue May 29 20:18:09 2018
 @author: colditzjb
 
 """
-import re#, csv
+import re
 
 
 
@@ -75,10 +75,16 @@ def reformat(text, mode=1.0, modes=modes,
     except:
         if mode in modes: # Match strings to values and convert to floats
             for k, v in modes.items(): 
-                mode = mode.replace(modes[k], modes[v])
-                mode = float(mode)
+                if mode == k:
+                    mode = modes[k]
+                    try:
+                        mode = float(mode)
+                    except:
+                        print('reformat(mode) value failed to convert from str to float')
+                        pass
         else:
-            mode = mode
+            print('reformat(mode) value not recognized')
+            pass
         
     # Always buffer whitespace for matching text
     text = ' '+text+' '
