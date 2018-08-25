@@ -190,11 +190,18 @@ def reformat(text, mode=1.0, modes=modes,
 
 # This performs matching on text, using boolean test phrases
 def match(test, text):
-
     ### Term syntax includes '*' as wildcard and '!' as NOT operator
     # wildcards do not respect space delimitations (full-text inclusive)
-    # NOT "!" operator must be prefixed onto the keyword (no spaces) 
-    # NOT "!" operator may have unpredictable behavior - use with caution!  
+    # "!" operator may have undesirable Boolean behavior: use with caution!
+
+    test = test.replace('! ' , '!') # Remove space after "!" for processing
+    
+    test = test.replace('#' , '# ') # Reformat to catch hashtags as keywords...
+    while '  ' in test:
+        text = test.replace('  ' , ' ')
+
+
+    
     def TermMatch(kw, text, matched=False):
     
         # this pads spacing to adjust kw for wildcards
@@ -267,22 +274,3 @@ def match(test, text):
     # Returns True/False for a logical keyword test within a given text
     return ParentMatch(test, text)
 
-"""
-### UNIT TESTING
-
-texts = ['THIS is a Generic tweet about vAPing...',
-         'this is a generiC twEEt that mentions JUUL',
-         'when i vape , i prefer juul\u2026',
-         'i am the based vape god , so i juul']
-
-tests = ['vaping & juul',
-         'vape | vaping & juul',
-         'generic | based & vaping | juul',
-         ' vap*',
-         '...']
-         
-for test in tests:
-    print(test)
-    for text in texts:
-        print('  '+text+' - '+str(match(test, reform(text))))
-"""
