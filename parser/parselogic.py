@@ -15,7 +15,8 @@ import os, datetime, re
 #    "stamp" argument takes a Twitter-formatted timestamp and converts it.
 #
 ###
-def ts(stamp=None):
+def ts(stamp=None, format=None):
+    fail = False
     if stamp is None:
         timestamp = str(datetime.datetime.today().strftime('%Y%m%d%H%M%S'))
         r = timestamp
@@ -23,13 +24,21 @@ def ts(stamp=None):
         months={'Jan':'01','Feb':'02','Mar':'03','Apr':'04',
                 'May':'05','Jun':'06','Jul':'07','Aug':'08',
                 'Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
-        try:
+        try: # This will convert Twitter timestamp to standard format
             d = stamp.split(' ')
             m = months[d[1]]
             t = d[3].split(':')
             r = d[5]+m+d[2]+t[0]+t[1]+t[2]
         except:
-            print('Failed to parse timestamp!')
+            if len(stamp)==14:
+                r = stamp
+            else:
+                r='Failed to parse timestamp!'
+                fail=True
+    if format and not fail: # This will output a readable timestamp for analysis
+        d = '/'.join([r[4:6],r[6:8],r[:4]])
+        t = ':'.join([r[8:10],r[10:12],r[12:14]])
+        r = d+' '+t
     return r
 
 
