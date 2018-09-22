@@ -4,10 +4,61 @@ Created on Tue May 29 20:18:09 2018
 @author: colditzjb
 
 """
-import re
+import os, datetime, re
 
 
+### ts function
+# Output a timestamp string in "YYYYMMDDhhmmss" format. 
+#
+#    ts() = current date/time.
+#    
+#    "stamp" argument takes a Twitter-formatted timestamp and converts it.
+#
+###
+def ts(stamp=None):
+    if stamp is None:
+        timestamp = str(datetime.datetime.today().strftime('%Y%m%d%H%M%S'))
+        r = timestamp
+    else:
+        months={'Jan':'01','Feb':'02','Mar':'03','Apr':'04',
+                'May':'05','Jun':'06','Jul':'07','Aug':'08',
+                'Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
+        try:
+            d = stamp.split(' ')
+            m = months[d[1]]
+            t = d[3].split(':')
+            r = d[5]+m+d[2]+t[0]+t[1]+t[2]
+        except:
+            print('Failed to parse timestamp!')
+    return r
 
+
+### mkdir function
+#
+# A scrappy way to create a new directory, when needed. Use this function
+# on a directory before trying to write out new files to it. 
+#
+#   "dirs" argument can handle a string or list of strings that correspond 
+#       to one or more directories to search for and create if not there.
+#       This argument is REQUIRED and strings must end with a "/"
+#
+#   "base" argument is an optional parent directory to work from.
+#
+###
+def mkdir(dirs, base=''):
+    def makeit(base, dirs):
+        if dirs[-1] != '/':
+            print(str(dirs)+' is an invalid directory name!')
+        elif not os.path.exists(base+dirs):
+            os.makedirs(base+dirs)
+            
+    if type(dirs) is str:
+        makeit(base, dirs)
+    elif type(dirs) is list:
+        for d in dirs:
+            makeit(base, d)
+    else:
+        return None
 
 
 # Replace unicode emoji and symbols with human-readable text
@@ -48,7 +99,7 @@ modes = {'tsv':'1.0',
          'hum':'3.5',
          'kws':'4.5'}
 
-### REFORMAT FUNCTION
+### reformat function
 # 
 # This reformats text so that it is keyword searchable or machine/human readable
 # Format selection relies on bandwidths of float numbers (as above, so below)
