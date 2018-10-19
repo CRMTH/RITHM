@@ -115,7 +115,7 @@ class decoder:
                             #traceback.print_exc() #############
 
                             j = ['','more'] ### THIS NEEDS UPDATING?
-                            pass #break ### Break here when diagnosing errors
+                            #pass #break ### Break here when diagnosing errors
                 f.close()
                 return None
             
@@ -165,23 +165,29 @@ class decoder:
         
     # This loads the most comprehensive text portion of the tweet  
     def parseText(self, data):       
-        # Try for extended text of original tweet, if RT'd
+        # Try for extended text of original tweet, if RT'd (streamer)
         try: text = data['retweeted_status']['extended_tweet']['full_text']
         except: 
-            # Try for extended text of an original tweet
-            try: text = data['extended_tweet']['full_text']
+            # Try for extended text of an original tweet, if RT'd (REST API)
+            try: text = data['retweeted_status']['full_text']
             except:
-                # Try for basic text of original tweet if RT'd 
-                try: text = data['retweeted_status']['text']
+                # Try for extended text of an original tweet (streamer)
+                try: text = data['extended_tweet']['full_text']
                 except:
-                    # Try for basic text of an original tweet
-                    try: text = data['text']
-                    except: 
-                        # Nothing left to check for
-                        text = ''
-                        self.n_warnings += 1
-                        #print(data)  ##### These appear to be streamer errors ######
-                        ############## THIS COULD BE IMPORTANT!
+                    # Try for extended text of an original tweet (REST API)
+                    try: text = data['full_text']
+                    except:
+                        # Try for basic text of original tweet if RT'd 
+                        try: text = data['retweeted_status']['text']
+                        except:
+                            # Try for basic text of an original tweet
+                            try: text = data['text']
+                            except: 
+                                # Nothing left to check for
+                                text = ''
+                                self.n_warnings += 1
+                                #print(data)  ##### These appear to be streamer errors ######
+                                ############## THIS COULD BE IMPORTANT!
 
         # Run parselogic.reformat 
         #text = parselogic.reformat(text)
@@ -243,7 +249,9 @@ class decoder:
         entities.append(data['user']['screen_name'])#.encode('utf-8')) #user
         try: entities.append(str(int(data['user']['utc_offset'])/3600)) #utc
         except TypeError: entities.append('') #utc
-        entities.append(data['user']['created_at']) #created
+        try: created = parselogic.ts(data['user']['created_at'], format=True) #########
+        except: created = data['user']['created_at']
+        entities.append(created) #created
         entities.append(str(data['user']['favourites_count'])) #faves
         entities.append(str(data['user']['followers_count'])) #followers
         entities.append(str(data['user']['friends_count'])) #following
@@ -261,8 +269,8 @@ class decoder:
         entities.append(text) #text
         quote = parselogic.reformat(parsed_quote, mode=1.5, lcase=self.lcase, emoji=self.emoji)
         entities.append(quote) #text
-        date = data['created_at']
-        entities.append(date) #date
+        try: date = parselogic.ts(data['created_at'], format=True) ##########
+        except: date = data['created_at']
         entities.append('http://twitter.com/'+str(data['user']['screen_name'])+'/status/'+str(data['id_str'].strip('\''))) #url
         coords = decoder.getCoords(self, data)
         entities.append(coords[0]) #Lat
@@ -277,3 +285,5 @@ class decoder:
                                    'retweetID', 'retweet user', 'retweet count', 
                                    'text', 'quote', 'date', 'url', 'lat', 'lon'])                    
             saveFile.writerow([entity for entity in entities])
+
+
