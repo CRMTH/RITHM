@@ -15,6 +15,10 @@ start = None
 end = None
 logging = None
 
+# These are default values in case 
+lcase = False
+mode = 1.0
+
 
 try: 
     dir_path = os.path.dirname(os.path.realpath(__file__))+'/'
@@ -32,8 +36,10 @@ if len(sys.argv) > 1: # If command line arguments were passed
     try:
         for arg in sys.argv:
             # '-f' indicates template file input (req. 1 file object)
-            if arg.lower() in ['-f','-file']:  
+            if arg.lower() in ['-f','-file']:
                 template = str(sys.argv[i+1])
+                if '/' in template:
+                    dir_path = '' # Ignore dir_path if directory is defined
 
             # '-d' indicates start/end dates (req. 2 MMDDYYYY objects)
             if arg.lower() in ['-d','-date','-dates']:
