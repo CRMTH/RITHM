@@ -15,7 +15,7 @@ import os, datetime, re
 #    "stamp" argument takes a Twitter-formatted timestamp and converts it.
 #
 ###
-def ts(stamp=None, format=None):
+def ts(stamp=None, reform=None):
     fail = False
     if stamp is None:
         timestamp = str(datetime.datetime.today().strftime('%Y%m%d%H%M%S'))
@@ -35,7 +35,7 @@ def ts(stamp=None, format=None):
             else:
                 r='Failed to parse timestamp!'
                 fail=True
-    if format and not fail: # This will output a readable timestamp for analysis
+    if reform and not fail: # This will output a readable timestamp for analysis
         d = '/'.join([r[4:6],r[6:8],r[:4]])
         t = ':'.join([r[8:10],r[10:12],r[12:14]])
         r = d+' '+t
