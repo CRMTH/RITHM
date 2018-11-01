@@ -14,7 +14,7 @@ loMem = None
 start = None 
 end = None
 logging = None
-
+emoji = None
 # These are default values in case 
 lcase = False
 mode = 1.0
