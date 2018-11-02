@@ -15,7 +15,6 @@ class decoder:
         self.dirOut = dirOut
         self.mode = mode
         self.lcase = lcase
-        self.emoji = emoji
         self.logging = logging
         
         self.n_tweets = 0
@@ -25,16 +24,13 @@ class decoder:
 
         self.out_extension=out_extension
         
-        #self.emojis = {}
-        #if emojiFile:
-        #    with open(emojiFile, 'r') as f:
-        #        reader = csv.reader(f)
-        #        emoji_list = list(reader)
-        #        for emoji in emoji_list:
-        #            self.emojis.update({emoji[0].lower() : emoji[1]})
-        
-
-
+        self.emojis = {}
+        if emoji is not None:
+            with open(emoji, 'r') as emoji_file:
+                for line in emoji_file:
+                    unic = line.split(',')[0].lower()
+                    trans = line.split(',')[1]
+                    self.emojis[unic] = trans
 
     # This cleans the JSON format and seperates into individual tweet data
     # It will return a list of tweets
@@ -92,8 +88,6 @@ class decoder:
                             kwtext = parsed_text+' '+parsed_quote
                             self.n_tweets += 1
                             if decoder.checkForKWs(self, kwtext) == True: # Means that a keyword was found in the tweet
-                                #if emojiFile:  # This will be implemented in parselogic.py 
-                                #    kwtext = decoder.emojify(self, kwtext)
                                 decoder.writeToCSV(self, dic, parsed_text, parsed_quote, fileName, count)
                                 count += 1
                                 #if j[1] == 'done':
@@ -115,7 +109,7 @@ class decoder:
                             #traceback.print_exc() #############
 
                             j = ['','more'] ### THIS NEEDS UPDATING?
-                            #pass #break ### Break here when diagnosing errors
+                            #break ### Break here when diagnosing errors
                 f.close()
                 return None
             
@@ -138,8 +132,6 @@ class decoder:
                         #decoder._tweets_checked += 1 #increment the number of tweets checked
                         if decoder.checkForKWs(self, kwtext) == True: #means that a keyword was found in the tweet
                             #decoder._tweet_count += 1    #increment the count on the number of tweets printed
-                            #if emojiFile:
-                            #    kwtext = decoder.emojify(self, kwtext)
                             decoder.writeToCSV(self, data, parsed_text, parsed_quote, fileName, count)
                             count += 1
                     
@@ -192,7 +184,6 @@ class decoder:
         # Run parselogic.reformat 
         #text = parselogic.reformat(text)
 
-        
         text = str(text.encode('unicode-escape'))[2:-1]
         return text
 
@@ -221,8 +212,8 @@ class decoder:
     # If there is no keyword then return a 0 to skip over the tweet
     def checkForKWs(self, kwtext):
         hit = False
-        formattedtext = parselogic.reformat(kwtext, mode=4.5,
-                                            lcase=True, emoji=None)
+        formattedtext = parselogic.reformat(kwtext, self.emojis, mode=4.5,
+                                            lcase=True)
         for kw in self.keywords:
             if parselogic.match(kw, formattedtext):
                 hit = True
@@ -265,9 +256,9 @@ class decoder:
             entities.append('') #t_id_rt
             entities.append('') #user_rt
             entities.append(0) #rt_count
-        text = parselogic.reformat(parsed_text, mode=1.5, lcase=self.lcase, emoji=self.emoji)
+        text = parselogic.reformat(parsed_text, self.emojis, mode=1.5, lcase=self.lcase)
         entities.append(text) #text
-        quote = parselogic.reformat(parsed_quote, mode=1.5, lcase=self.lcase, emoji=self.emoji)
+        quote = parselogic.reformat(parsed_quote, self.emojis, mode=1.5, lcase=self.lcase)
         entities.append(quote) #text
         try: date = parselogic.ts(data['created_at'], format=True) ##########
         except: date = data['created_at']

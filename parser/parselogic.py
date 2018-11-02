@@ -69,25 +69,7 @@ def mkdir(dirs, base=''):
     else:
         return None
 
-
-# Replace unicode emoji and symbols with human-readable text
-global emojis
-emojis = {}
-def emojifile(efile='emojilist.csv'):
-    global emojis
-    with open(efile, 'r') as f:
-        #reader = csv.reader(f)
-        #emoji_list = list(reader)
-        #for emoji in emoji_list:
-        #    emojis.update({emoji[0].lower() : emoji[1]})
-        for l in f:
-            unic=l.split(',')[0].lower()
-            trans=l.split(',')[1]
-            emojis[unic]=trans
-    return None
-
-def emojify(text):
-    global emojis
+def emojify(text, emojis):
     if '\\u' in text.lower():
         text = text.replace('\\\\U' , '\\\\u')
         text = text.replace('\\\\u' , ' \\\\u')
@@ -95,7 +77,13 @@ def emojify(text):
         for word in words:
             if '\\u' in word:
                 if word in emojis.keys():
-                        words[words.index(word)] = emojis[word]
+                    words[words.index(word)] = emojis[word]
+                elif word[0:11] in emojis:
+                    word_1 = word[11:len(word)]
+                    words[words.index(word)] = emojis[word[0:11]] + ' ' + word_1
+                elif word[0:7] in emojis:
+                    word_1 = word[7:len(word)]
+                    words[words.index(word)] = emojis[word[0:7]] + ' ' + word_1
         return ' '.join(words)
     return text
 
@@ -124,11 +112,11 @@ modes = {'tsv':'1.0',
 #
 #   "lcase" argument is optional. All text will be reduced to lowercase. 
 #   "ht_include" argument is optional. Hashtags will be included w/ basic keywords. 
-#   "emoji" argument is optional. Emoji will be recoded if filepath is valid. 
+#   "emoji" argument contains the emoji dictionary. Will be empty if filepath is invalid. 
 ###
-def reformat(text, mode=1.0, modes=modes, 
-             lcase=False, ht_include=True, emoji=None):
-
+def reformat(text, emojis, mode=1.0, modes=modes, 
+             lcase=False, ht_include=True):
+    
     # It's faster to use numbers instead of dictionary matching of text!
     try:
         mode = float(mode)
@@ -158,10 +146,6 @@ def reformat(text, mode=1.0, modes=modes,
         text = text.lower()
     elif mode >= 4:
         text = text.lower()
-
-
-
-    text = text.replace('\\\\', '\\') #Fixing backslach escapes
 
     # Commas/returns/tabs get recoded because CSV output
     # WE MAY WANT TO OUTPUT AS TAB-SEPARATED TO PRESERVE COMMAS (FOR TWOKENIZE)
@@ -241,9 +225,12 @@ def reformat(text, mode=1.0, modes=modes,
         while '----' in text:
             text = text.replace('----' , '---')
 
+    # If emojis is non-empty, convert unicode emoji and symbols 
+    # to human readable text using emoji dictionary
+    if emojis:
+        text = emojify(text, emojis)
 
-    # INSERT EMOJIFY ABOUT HERE
-
+    text = text.replace('\\\\', '\\') #Fixing backslach escapes
     return text
 
 
