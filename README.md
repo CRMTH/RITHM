@@ -20,7 +20,7 @@ The parser re-formats raw Twitter data to human-readable format for coding and a
 
 # Citation:
 If you use the RITHM software or resources for your research, please cite our development paper: 
->Colditz JB, Chu K, Emery SL, Larkin CR, James AE, Welling J, Primack BA. Toward real-time infovellience of Twitter health messages. _American Journal of Public Health_. 2018;108(8). \[Online before print\] doi: [10.2105/AJPH.2018.304497](https://doi.org/10.2105/AJPH.2018.304497)
+>Colditz JB, Chu K, Emery SL, Larkin CR, James AE, Welling J, Primack BA. Toward real-time infovellience of Twitter health messages. _American Journal of Public Health_. 2018;108(8), 1009-1014.  doi: [10.2105/AJPH.2018.304497](https://doi.org/10.2105/AJPH.2018.304497)
 
 # Project team updates:
 
