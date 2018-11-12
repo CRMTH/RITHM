@@ -24,7 +24,7 @@ If you use the RITHM software or resources for your research, please cite our de
 
 # Project team updates:
 
-_**`01 Sep. 2018`** We received an new research allocation to use the [Bridges](https://www.psc.edu/bridges) infrastructure at Pittsburgh Supercomputing Center (XRAC-SBE180005; PI: [Primack](https://www.dom.pitt.edu/dgim/faculty_info.aspx/Primack4945)). Future publications from our group [should acknowledge](https://www.psc.edu/allocations/acknowledgement-in-publications) that this work "is supported by NSF award number ACI-1445606, at the Pittsburgh Supercomputing Center (PSC)."_
+_**`01 Sep. 2018`** We received an new research allocation to use the [Bridges](https://www.psc.edu/bridges) infrastructure at Pittsburgh Supercomputing Center (XRAC-SBE180005; PI: [Primack](https://www.dom.pitt.edu/dgim/faculty_info.aspx/Primack4945)). Future publications from our group [should acknowledge](https://www.psc.edu/allocations/acknowledgement-in-publications): "Technical infrastructure was supported through NSF awards ACI-1548562 & 1445606, at the Pittsburgh Supercomputing Center (PSC)."_
 
 _**`24 Jul. 2018`** [New Twitter Developer rules](https://blog.twitter.com/developer/en_us/topics/tools/2018/new-developer-requirements-to-protect-our-platform.html) will require additional documentation and review of applications for Twitter API access._
 
