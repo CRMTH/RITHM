@@ -292,10 +292,10 @@ if __name__ == '__main__':
     # Creates new killSwitch file
     with open(indirectory+'DeleteToKill.txt','w+') as switch:
         switch.write('Delete this file to kill the streamer.')
-     # Sets permissions as "-rwxrwxr-x", i.e., 0o775
-     try:
+    # Sets permissions as "-rwxrwxr-x", i.e., 0o775
+    try:
         os.chmod(indirectory+'DeleteToKill.txt', 0o775)
-     except:
+    except:
         print('Failed to set custom file permissions for DeleteToKill.txt')
         
     # Logs startup and keywords
