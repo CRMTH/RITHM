@@ -45,8 +45,10 @@ def paths(dir_path):
         if 'data_out' in line:
             outdirectory = line.split(':')[1].strip()
     if not indirectory:
+        print('failed to set indirectory')
         indirectory = dir_path
     if not outdirectory:
+        print('failed to set outdirectory')
         outdirectory = '../data/streamer_raw/'
     return indirectory, outdirectory
 
@@ -193,6 +195,7 @@ def getKeywords(kwDirectory=indirectory, lang=lang):
             try:
                 fileTerms.append([line.rstrip('\n') for line in open(f)])
             except:
+                print('Failed to parse KWS file: '+f)
                 pass
     for group in fileTerms:
         for term in group:
