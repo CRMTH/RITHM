@@ -193,7 +193,7 @@ def getKeywords(kwDirectory=indirectory, lang=lang):
     for f in files:
         if f[-4:] == '.kws':
             try:
-                fileTerms.append([line.rstrip('\n') for line in open(f)])
+                fileTerms.append([line.rstrip('\n') for line in open(kwDirectory+f)])
             except:
                 print('Failed to parse KWS file: '+f)
                 pass
@@ -222,7 +222,8 @@ def set_file(suffix=suffix):
 
         
 ## Set streamer process and common error handling
-def setStreamer(KW=getKeywords()):
+def setStreamer():
+    KW=getKeywords()
     while True:
         try:
             if killSwitch():
