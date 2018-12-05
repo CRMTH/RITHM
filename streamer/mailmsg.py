@@ -1,5 +1,21 @@
 #! /usr/bin/env python3
 
+"""
+Center for Research on Media, Technology, and Health
+University of Pittsburgh
+
+Author:  welling
+Version: 2018-12-05
+Python version: 2.7 (tested) & 3.5+ (preferred)
+
+Required Python packages:
+  smtplib
+  getpass
+  platform
+
+"""
+
+
 import smtplib
 import getpass
 import platform
