@@ -3,8 +3,8 @@
 Center for Research on Media, Technology, and Health
 University of Pittsburgh
 
-Author:  colditzjb
-Version: 2018-05-04
+Authors:  @colditzjb, @sanyabt
+Version: 2018-12-07
 
 Python version: 2.7 (tested) & 3.5+ (preferred)
 
@@ -16,13 +16,11 @@ Required Python packages:
 
 import time, datetime, sys, json, os, csv
 from twython import TwythonStreamer
-import mailmsg
 
 ## SET DIRECTORIES AND OPTIONS HERE
-suffix = '_streamer.json' #Suffix (always include ".json" extension!)
-auth = 'auth.ini' #Text file w/ Twitter API authentication keys
-lang = ['en'] #Language filters: https://dev.twitter.com/web/overview/languages
-dir_path = '//home/jason/repos/RITHM/streamer/' #My default directory path
+suffix = '_streamer.json' # Suffix (always include ".json" extension!)
+lang = ['en'] # Language filters: https://dev.twitter.com/web/overview/languages
+dir_path = '~/RITHM/streamer/' # A default directory path for streamer folder
 
 
 ## --------------------------------------------------------------------
@@ -74,7 +72,7 @@ def killSwitch(killDirectory=indirectory):
 
 
 
-def keyring(infile=indirectory+auth):
+def keyring(infile=dir_path+'auth.ini'):
     keys = []
     for line in open(infile):
             if line[:1] =='#' or line.strip()=='':
@@ -310,7 +308,14 @@ if __name__ == '__main__':
     # Set new output data file and streamer process
     set_file()
     try:
+        # Sets the process into motion
         setStreamer()
     except:
-        mailmsg.main(dir_path)
+        # Tries to email a message if the process crashed
+        try:
+            import mailmsg
+            mailmsg.main(dir_path)
+        except:
+            print('mailmsg.py failed to send a message for streamer.py failure.\n"+
+                  'Ensure dependencies are installed and mail.ini is configured.')
         pass
