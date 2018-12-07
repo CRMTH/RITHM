@@ -16,6 +16,7 @@ Required Python packages:
 
 import time, datetime, sys, json, os, csv
 from twython import TwythonStreamer
+import mailmsg
 
 ## SET DIRECTORIES AND OPTIONS HERE
 suffix = '_streamer.json' #Suffix (always include ".json" extension!)
@@ -308,4 +309,8 @@ if __name__ == '__main__':
 
     # Set new output data file and streamer process
     set_file()
-    setStreamer()
+    try:
+        setStreamer()
+    except:
+        mailmsg.main(dir_path)
+        pass

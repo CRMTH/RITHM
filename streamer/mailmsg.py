@@ -20,7 +20,24 @@ import smtplib
 import getpass
 import platform
 
-def send_email(toaddr,fromaddr,subject,message):
+def read_keys(dir_path):
+    emails = []
+    for line in open(dir_path+'mail.ini'):
+        if line[:1] =='#' or line.strip()=='':
+                continue
+        else:
+            if 'email_id' in line:
+                email_id = line.split(':')[1].strip()
+                emails.append(email_id)
+            if 'subject' in line:
+                subject = line.split(':')[1].strip()
+            if 'error_msg' in line:
+                error_msg = line.split(':')[1].strip()
+            if 'service' in line:
+                service = line.split(':')[1].strip()
+    return emails, subject, error_msg, service
+
+def send_email(toaddr,fromaddr,subject,message,service):
 
     email = "From: " + fromaddr + "\n"
     email += "To: " + toaddr + "\n"
@@ -29,19 +46,16 @@ def send_email(toaddr,fromaddr,subject,message):
     email += message
 
     try:
-        server = smtplib.SMTP('mailer.psc.edu')
+        server = smtplib.SMTP(service)
         server.sendmail(fromaddr,toaddr,email)
         server.quit()
         return True
     except smtplib.SMTPException as e:
-        # print('exception: {0}'.format(e))
         return False
 
-def main():
+def main(dir_path):
     uname = getpass.getuser()
     hostname = platform.node()
-    rc = send_email('welling@psc.edu', '{0}@{1}'.format(uname, hostname), 'This is a test', 'Hello World!')
-    print('send_email returned {0}'.format(rc))
-
-if __name__ == '__main__':
-    main()
+    emails, subject, error_msg, service = read_keys(dir_path)
+    for email_id in emails:
+        rc = send_email(email_id, '{0}@{1}'.format(uname, hostname), subject, error_msg, service)
