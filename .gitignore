@@ -13,6 +13,8 @@
 # Output files:
 *.json
 *.csv
+*.tsv
+*.out
 
 # Directories: 
 ./data/*
