@@ -316,6 +316,6 @@ if __name__ == '__main__':
             import mailmsg
             mailmsg.main(dir_path)
         except:
-            print('mailmsg.py failed to send a message for streamer.py failure.\n"+
+            print('mailmsg.py failed to send a message for streamer.py failure.\n'+
                   'Ensure dependencies are installed and mail.ini is configured.')
         pass
