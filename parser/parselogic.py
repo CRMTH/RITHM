@@ -147,6 +147,12 @@ def reformat(text, emojis, mode=1.0, modes=modes,
     elif mode >= 4:
         text = text.lower()
 
+    # If emojis is non-empty, convert unicode emoji and symbols 
+    # to human readable text using emoji dictionary
+    if emojis:
+        text = emojify(text, emojis)
+
+    text = text.replace('\\\\', '\\') #Fixing backslach escapes
     # Commas/returns/tabs get recoded because CSV output
     # WE MAY WANT TO OUTPUT AS TAB-SEPARATED TO PRESERVE COMMAS (FOR TWOKENIZE)
     text = text.replace('\\n', ' _newline_ ') #Newline
@@ -225,12 +231,6 @@ def reformat(text, emojis, mode=1.0, modes=modes,
         while '----' in text:
             text = text.replace('----' , '---')
 
-    # If emojis is non-empty, convert unicode emoji and symbols 
-    # to human readable text using emoji dictionary
-    if emojis:
-        text = emojify(text, emojis)
-
-    text = text.replace('\\\\', '\\') #Fixing backslach escapes
     return text
 
 
