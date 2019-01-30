@@ -16,13 +16,13 @@ To install the RITHM source files (1.) open the command line, (2.) navigate to t
 > _Note: The data that you download will default to a `./RITHM/data/` subfolder, so you may need to pick a location where you can store lots of data, or plan to change that setting (more on that later)._
 
 ### 3. Download and install Twython
-For the streamer to run, the Twython package must be installed in the Python instance that you are running.~~~loacated within the RITHM folder.~~~ Follow the instructions provided in the link below to donwload and install Twython: 
+For the streamer to run, the Twython package must be installed in the Python instance that you are running. Follow the instructions provided in the link below to donwload and install Twython: 
 > https://github.com/ryanmcgrath/twython
 
 ## Setting up Twitter
 
 ### 4. Create a new Twitter user account
-1. You must have a Twitter account to procees to step 2. If you don't already have an account, use the link below to create one.  We strongly recommend using an account that is dedicated to the streamer (i.e., don't use a personal account).
+1. You must have a Twitter account to procees to step 2. If you don't already have an account, use the link below to create one.  We strongly recommend using an account that is dedicated to this project (i.e., don't use your personal account).
 >https://twitter.com/i/flow/signup?lang=en
 
 ### 5. Create a Twitter developer account
