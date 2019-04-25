@@ -71,21 +71,42 @@ def mkdir(dirs, base=''):
 
 def emojify(text, emojis):
     if '\\u' in text.lower():
-        text = text.replace('\\\\U' , '\\\\u')
-        text = text.replace('\\\\u' , ' \\\\u')
+        text = text.replace('\\U' , '\\u')
+        text = text.replace('\\u' , ' \\u')
         words = text.split(' ')
+
         for word in words:
             if '\\u' in word:
                 if word in emojis.keys():
                     words[words.index(word)] = emojis[word]
-                elif word[0:11] in emojis:
-                    word_1 = word[11:len(word)]
-                    words[words.index(word)] = emojis[word[0:11]] + ' ' + word_1
-                elif word[0:7] in emojis:
-                    word_1 = word[7:len(word)]
-                    words[words.index(word)] = emojis[word[0:7]] + ' ' + word_1
+                elif word[0:10] in emojis:
+                    word_1 = word[10:len(word)]
+                    words[words.index(word)] = emojis[word[0:10]] + ' ' + word_1
+                elif word[0:6] in emojis:
+                    word_1 = word[6:len(word)]
+                    words[words.index(word)] = emojis[word[0:6]] + ' ' + word_1
+                elif word[0:4] in emojis:
+                    word_1 = word[6:len(word)]
+                    words[words.index(word)] = emojis[word[0:4]] + ' ' + word_1
+
+
         return ' '.join(words)
     return text
+                    
+                    
+"""
+                #This is a different approach. May have additional processing overhaed
+                else:
+                    stem = ''
+                    i_char = 0
+                    done = False
+                    for char in word:
+                        stem += char
+                        i_char += 1
+                        if stem in emojis.keys():
+                            words[words.index(word)] = emojis[stem]+' '+word[i_char:]
+                            break
+"""
 
 
 # This is a crude, hierarchical way to organize modes
@@ -137,6 +158,11 @@ def reformat(text, emojis, mode=1.0, modes=modes,
     # Always buffer whitespace for matching text
     text = ' '+text+' '
 
+    # This reformats the unicode objects so we can work with them 
+    text = str(text.encode('unicode-escape'))[2:-1]
+
+    text = text.replace('\\\\', '\\') #Fixing backslach escapes
+
     # https://stats.seandolinar.com/collecting-twitter-data-converting-twitter-json-to-csv-ascii/
     # This was good, in theory, but completely borked file input
     #text = text.encode('unicode_escape') # THIS BELONGS WITH INPUT PROCEDURES, IF USEFUL 
@@ -147,12 +173,6 @@ def reformat(text, emojis, mode=1.0, modes=modes,
     elif mode >= 4:
         text = text.lower()
 
-    # If emojis is non-empty, convert unicode emoji and symbols 
-    # to human readable text using emoji dictionary
-    if emojis:
-        text = emojify(text, emojis)
-
-    text = text.replace('\\\\', '\\') #Fixing backslach escapes
     # Commas/returns/tabs get recoded because CSV output
     # WE MAY WANT TO OUTPUT AS TAB-SEPARATED TO PRESERVE COMMAS (FOR TWOKENIZE)
     text = text.replace('\\n', ' _newline_ ') #Newline
@@ -231,6 +251,12 @@ def reformat(text, emojis, mode=1.0, modes=modes,
         while '----' in text:
             text = text.replace('----' , '---')
 
+    # If emojis is non-empty, convert unicode emoji and symbols 
+    # to human readable text using emoji dictionary
+    if emojis:
+        text = emojify(text, emojis)
+
+    #text = text.replace('\\\\', '\\') #Fixing backslach escapes
     return text
 
 

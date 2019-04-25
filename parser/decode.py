@@ -43,26 +43,29 @@ class decoder:
 
 
             def jsonline(line, tweet, status): #UPDATE THIS?
-                #tweet = ''
 
-                if tweet[-1:] in ['[',']','{','}','(',')']:
-                    end = False
-                elif line[:1] in ['[',']','{','}','(',')']:
-                    end = False
-                else:
-                    end = True
+                #if tweet[-1:] in ['[',']','{','}','(',')']:
+                #    end = False
+                #elif line[:1] in ['[',']','{','}','(',')']:
+                #    end = False
+                #else:
+                #    end = True
 
-                if status in ['first','more']:
+                if status == 'first':
                     tweet = '{'
+                    status = 'working'
+
+                elif status == 'more':
+                    tweet = '{'+line.strip()
                     status = 'working'
                     
                 elif line.strip() == '}{':
                     tweet = tweet + '}'
                     status = 'more'
 
-                elif line.strip() == '}' and end:
-                    tweet = tweet + '}'
-                    status = 'done'
+                #elif line.strip() == '}' and end:
+                #    tweet = tweet + '}'
+                #    status = 'done'
                                         
                 else:
                     tweet = tweet+line.strip()
@@ -72,12 +75,12 @@ class decoder:
 
             with open(dirIn+fileName, 'r', encoding='utf-8') as f:
                 count = 0
-                errors = 0
+                #errors = 0
                 j = ['','first']
                 for line in f.readlines():
                     tweet = j[0]
                     status = j[1]
-                    j = jsonline(line, tweet, status) ### FIX THIS TO CATCH FIRST TWEET?
+                    #j = jsonline(line, tweet, status) ### 
                     
                     if j[1] in ['more', 'done']:
                         tweet = j[0]
@@ -94,22 +97,30 @@ class decoder:
                                 #    f.close()
                                 #    print('DONE\n')
                                 #    return None
-                                
+
+                        #except ValueError:
+                        #    self.n_errors += 1
+                        #    j = ['','more'] ### THIS NEEDS UPDATING?
+                        #    pass
+                        
                         except:
                             ### These can be un-commented if you are trying to diagnose errors
-                            ### TO-DO: incorporate error logging here
-                            self.n_errors += 1
+                            ### FUTURE: incorporate error logging here
+                            #print(j[0])
                             #print('\n Count: '+str(count)+
                             #      '\nErrors: '+str(errors)+
                             #      '\nLength: '+str(len(tweet))+
                             #      '\n')
                             #if len(tweet) < 100: # This catches Twitter API hiccups
                             #    print(tweet)
-                            #print(tweet) # This isn't generally useful
-                            #traceback.print_exc() #############
-
-                            j = ['','more'] ### THIS NEEDS UPDATING?
+                            #print(tweet) 
+                            #traceback.print_exc() # This is the most helpful info to print
+                            self.n_errors += 1
+                            j = ['','more'] ### 
                             #break ### Break here when diagnosing errors
+                    
+                    j = jsonline(line, tweet, status) # The last tweet will be ignored.
+
                 f.close()
                 return None
             
@@ -147,8 +158,6 @@ class decoder:
                         traceback.print_exc()
                         pass
                     return False
-                    #f.close()
-                #return fixed
 
         else:
             lineparse(self, dirIn, fileName)
@@ -179,12 +188,8 @@ class decoder:
                                 text = ''
                                 self.n_warnings += 1
                                 #print(data)  ##### These appear to be streamer errors ######
-                                ############## THIS COULD BE IMPORTANT!
 
-        # Run parselogic.reformat 
-        #text = parselogic.reformat(text)
-
-        text = str(text.encode('unicode-escape'))[2:-1]
+        #text = str(text.encode('unicode-escape'))[2:-1] # REM 20190423 (moved to parselogic.py)
         return text
 
 
@@ -201,10 +206,7 @@ class decoder:
                 quote = ''
                 #print('parseQuote FAIL')
 
-        #if len(quote)>0:
-        #    quote = parselogic.reformat(quote)
-        
-        quote = str(quote.encode('unicode-escape'))[2:-1]
+        #quote = str(quote.encode('unicode-escape'))[2:-1]  # REM 20190423
         return quote
 
 
@@ -236,45 +238,164 @@ class decoder:
 
         entities = []
         outfile = self.dirOut+str(fn[:14]+'_data'+self.out_extension)   # Changed from .csv to .tsv (20180716 JC)
-        entities.append('\''+str(data['user']['id']))   #userID
-        entities.append(data['user']['screen_name'])#.encode('utf-8')) #user
-        try: entities.append(str(int(data['user']['utc_offset'])/3600)) #utc
-        except TypeError: entities.append('') #utc
+
+        ###################
+        ### User-level data
+        ###################
+
+        entities.append('\''+str(data['user']['id']))   # u_id
+
+        entities.append(data['user']['screen_name'])#.encode('utf-8')) # u_handle
+
+        if data['user']['name']:
+            name = parselogic.reformat(data['user']['name'], self.emojis, mode=1.0, lcase=self.lcase)
+            entities.append(name)#.encode('utf-8')) # u_name
+        else: entities.append('') 
+
+        if data['user']['description']:
+            desc = parselogic.reformat(data['user']['description'], self.emojis, mode=1.0, lcase=self.lcase)
+            entities.append(desc)#.encode('utf-8')) # u_desc
+        else: entities.append('') 
+
+        try: entities.append(data['user']['url']) # u_url
+        except: entities.append('') 
+
         try: created = parselogic.ts(data['user']['created_at'], format=True) #########
         except: created = data['user']['created_at']
-        entities.append(created) #created
-        entities.append(str(data['user']['favourites_count'])) #faves
-        entities.append(str(data['user']['followers_count'])) #followers
-        entities.append(str(data['user']['friends_count'])) #following
-        entities.append(str(data['user']['statuses_count'])) #tweets
-        entities.append('\''+data['id_str']) #t_id
-        try:
-            entities.append('\''+data['retweeted_status']['id_str']) #t_id_rt
-            entities.append(data['retweeted_status']['user']['screen_name']) #user_rt
-            entities.append(data['retweeted_status']['retweet_count']) #rt_count
+        entities.append(created) # u_create
+
+        entities.append(str(data['user']['statuses_count'])) #u_tweets
+        entities.append(str(data['user']['friends_count'])) # u_fo_out
+        entities.append(str(data['user']['followers_count'])) # u_fo_in
+        entities.append(str(data['user']['favourites_count'])) # u_likes
+
+
+        try: entities.append(str(int(data['user']['utc_offset'])/3600)) # u_utcoff
+        except: entities.append('') 
+
+        try: 
+            loc = parselogic.reformat(data['user']['location'], self.emojis, mode=1.0, lcase=self.lcase)
+            entities.append(loc)
+        except: entities.append('') 
+
+        if str(data['user']['geo_enabled']) == 'true':
+            entities.append(1) # u_geotag
+        else: entities.append(0) # u_geotag
+
+        try: entities.append(data['user']['lang']) # u_lang
+        except: entities.append('') 
+
+        try: entities.append(data['user']['profile_image_url']) # u_imgurl
+        except: entities.append('') 
+
+        try: entities.append(data['user']['profile_banner_url']) # u_bgurl
+        except: entities.append('') 
+
+        if str(data['user']['protected']) == 'true':
+            entities.append(1) # u_privat
+        else: entities.append(0) # u_privat
+
+        if str(data['user']['verified']) == 'true':
+            entities.append(1) # u_verify
+        else: entities.append(0) # u_verify
+
+        # placeholder for tracking number of captured tweets / user
+        entities.append('') # u_n_capt
+
+        ####################
+        ### Tweet-level data
+        ####################
+
+        try: 
+            t_id = ('\''+data['id_str'])
         except:
-            entities.append('') #t_id_rt
-            entities.append('') #user_rt
-            entities.append(0) #rt_count
-        text = parselogic.reformat(parsed_text, self.emojis, mode=1.5, lcase=self.lcase)
-        entities.append(text) #text
-        quote = parselogic.reformat(parsed_quote, self.emojis, mode=1.5, lcase=self.lcase)
-        entities.append(quote) #text
+            try: t_id = ('\''+str(data['id'])) # t_id
+            except: t_id = '\''
+        entities.append(t_id) # t_id
+
+        text = parselogic.reformat(parsed_text, self.emojis, mode=1.0, lcase=self.lcase)
+        entities.append(text) # t_text
+
+        quote = parselogic.reformat(parsed_quote, self.emojis, mode=1.0, lcase=self.lcase)
+        entities.append(quote) # t_quote
+
+        entities.append('http://twitter.com/'+str(data['user']['screen_name'])+'/status/'+t_id.strip('\'')) # t_url
+
         try: date = parselogic.ts(data['created_at'], format=True) ##########
         except: date = data['created_at']
-        entities.append('http://twitter.com/'+str(data['user']['screen_name'])+'/status/'+str(data['id_str'].strip('\''))) #url
+        entities.append(date) # t_date
+
         coords = decoder.getCoords(self, data)
-        entities.append(coords[0]) #Lat
-        entities.append(coords[1]) #Lon
-        
+        entities.append(coords[0]) # t_geolat
+        entities.append(coords[1]) # t_geolon
+
+        try: place =  data['place']['full_name'] 
+        except: place = ''
+        entities.append(place) # t_place
+
+
+        try: lang =  data['lang'] 
+        except: lang = ''
+        entities.append(lang) # t_lang
+
+        try:
+            entities.append('\''+data['in_reply_to_status_id_str']) # re_t_tid
+            entities.append('\''+data['in_reply_to_user_id_str']) # re_u_id
+        except:
+            entities.append('') # re_t_id
+            entities.append('') # re_u_id
+
+        try:
+            entities.append('\''+data['quoted_status']['id_str']) # qu_t_tid
+            entities.append('\''+data['quoted_status']['user']['id_str']) # qu_u_id
+            entities.append(data['quoted_status']['retweet_count']) # qu_n_rt
+            entities.append(data['quoted_status']['favorite_count']) # qu_n_fav
+            entities.append(data['quoted_status']['reply_count']) # qu_n_rep
+            entities.append(data['quoted_status']['quote_count']) # qu_n_quo
+        except:
+            entities.append('') # qu_t_id
+            entities.append('') # qu_u_id
+            entities.append('') # etc. 
+            entities.append('') 
+            entities.append('') 
+            entities.append('') 
+
+        try:
+            entities.append('\''+data['retweeted_status']['id_str']) # rt_t_tid
+            entities.append('\''+data['retweeted_status']['user']['id_str']) # rt_u_id
+            entities.append(data['retweeted_status']['retweet_count']) # rt_n_rt
+            entities.append(data['retweeted_status']['favorite_count']) # rt_n_fav
+            entities.append(data['retweeted_status']['reply_count']) # rt_n_rep
+            entities.append(data['retweeted_status']['quote_count']) # rt_n_quo
+        except:
+            entities.append('') # rt_t_id
+            entities.append('') # rt_u_id
+            entities.append('') # etc.
+            entities.append('') 
+            entities.append('') 
+            entities.append('') 
+
+       
         ### UPDATE TO REMOVE csv.writer DEPENDENCY
         with open(outfile, 'a') as csvfile:      
             saveFile = csv.writer(csvfile, delimiter='\t', lineterminator='\n')        
             if count == 0:
-                saveFile.writerow(['userID', 'username', 'utc off', 'profile created',
-                                   'favorites', 'followers', 'following', 'tweets', 'tweetID',
-                                   'retweetID', 'retweet user', 'retweet count', 
-                                   'text', 'quote', 'date', 'url', 'lat', 'lon'])                    
+
+
+                saveFile.writerow(['u_id', 'u_handle', 'u_name', 
+                                   'u_desc', 'u_url', 'u_create',
+                                   'u_tweets', 'u_fo_out', 'u_fo_in', 'u_likes', 'u_utcoff',
+                                   'u_locate', 'u_geotag', 'u_lang', 'u_imgurl', 'u_bgurl',
+                                   'u_privat', 'u_verify', 'u_n_capt',
+                                   't_id', 't_text', 't_quote', 't_url', 
+                                   't_date', 't_geolat', 't_geolon',
+                                   't_place', 't_lang', 
+                                   're_t_id', 're_u_id',
+                                   'qu_t_id', 'qu_u_id', 
+                                   'qu_n_qu', 'qu_n_re', 'qu_n_rt', 'qu_n_fav',
+                                   'rt_t_tid', 'rt_u_id', 
+                                   'rt_n_qu', 'rt_n_re', 'rt_n_rt', 'rt_n_fav'])
+    
             saveFile.writerow([entity for entity in entities])
 
 
