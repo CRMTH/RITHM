@@ -224,8 +224,8 @@ N_tweets = 0
 N_matches = 0
 N_warnings = 0
 N_errors = 0
-#N_duplicates = 0
-#N_large_duplicates = 0
+N_duplicates = 0
+N_large_duplicates = 0
 
 for f in files:
     if f[-5:] =='.json':
@@ -252,12 +252,14 @@ for f in files:
                     n_errors = d.n_errors
                     N_errors += n_errors
                     print('ERRORS:     '+ str(n_errors))
-                    #log duplicate tweet counts
-                    #n_duplicates = number of keys in d.yesterday_dict and d.today_dict > 1
-                    #N_duplicates += n_duplicates
-                    #log large duplicates
-                    #n_large_duplicates = number of keys in d.yesterday_dict and d.today_dict > 10
-                    #N_large_duplicates += n_large_duplicates
+                    #log duplicate tweet counts i.e. number of tweets with duplicates (not number of duplicates)
+                    n_duplicates = sum(x > 1 for x in d.today_dict.values())
+                    N_duplicates += n_duplicates
+                    #log large duplicates (greater than 10 duplicates)
+                    n_large_duplicates = sum(x > 10 for x in d.today_dict.values())
+                    N_large_duplicates += n_large_duplicates
+                    print('DUPLICATES:  '+ str(n_duplicates))
+                    print('LARGE DUPLICATES:    '+str(n_large_duplicates))
                 yesterday_dict = d.today_dict
                 today_dict = {}
                 #d.jsontocsv(record,f,geo,emojify, count=0)
@@ -277,7 +279,8 @@ if logging:
     print('N_MATCHES:   '+str(N_matches))
     print('N_WARNINGS:  '+str(N_warnings))
     print('N_ERRORS:    '+str(N_errors))
-    #Print duplicate tweet stats
+    print('N_DUPLICATES:    '+str(N_duplicates))
+    print('N_LARGE_DUPLICATES:  '+str(N_large_duplicates))
     
 #if combine:
 #    c = csvcombine(dirOut, dir_path, dirTemp)
