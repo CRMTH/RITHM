@@ -19,6 +19,9 @@ emoji = None
 lcase = False
 mode = 1.0
 
+#Dictionaries to keep track of duplicate tweets across all parsed files
+yesterday_dict = {}
+today_dict = {}
 
 try: 
     dir_path = os.path.dirname(os.path.realpath(__file__))+'/'
@@ -221,6 +224,8 @@ N_tweets = 0
 N_matches = 0
 N_warnings = 0
 N_errors = 0
+#N_duplicates = 0
+#N_large_duplicates = 0
 
 for f in files:
     if f[-5:] =='.json':
@@ -228,10 +233,10 @@ for f in files:
         if int(f[:8]) >= int(start):
             if int(f[:8]) <= int(end):
                 d = decoder(keywords, dirIn, dirOut, 
-                            hiMem, mode, lcase, emoji, logging)
+                            hiMem, mode, lcase, emoji, logging, yesterday_dict, today_dict)
                 #record = d.fixjson(dirIn, f, hiMem, emojiFile)
                 record = d.fixjson(dirIn, f, hiMem)
-                
+
                 if logging:
                     print('\n# FILE STATS #') 
                     print('FILE:       '+ str(f))
@@ -247,8 +252,14 @@ for f in files:
                     n_errors = d.n_errors
                     N_errors += n_errors
                     print('ERRORS:     '+ str(n_errors))
-                
-                
+                    #log duplicate tweet counts
+                    #n_duplicates = number of keys in d.yesterday_dict and d.today_dict > 1
+                    #N_duplicates += n_duplicates
+                    #log large duplicates
+                    #n_large_duplicates = number of keys in d.yesterday_dict and d.today_dict > 10
+                    #N_large_duplicates += n_large_duplicates
+                yesterday_dict = d.today_dict
+                today_dict = {}
                 #d.jsontocsv(record,f,geo,emojify, count=0)
         #except:
         #    print("Incorrect format: ",f)
@@ -266,6 +277,7 @@ if logging:
     print('N_MATCHES:   '+str(N_matches))
     print('N_WARNINGS:  '+str(N_warnings))
     print('N_ERRORS:    '+str(N_errors))
+    #Print duplicate tweet stats
     
 #if combine:
 #    c = csvcombine(dirOut, dir_path, dirTemp)

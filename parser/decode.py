@@ -8,7 +8,7 @@ class decoder:
     # MAY WANT TO INPUT SOME OF THESE ARGUMENTS W/IN A DICTIONARY?
     def __init__ (self, keywords, dirIn, dirOut,
                   hiMem, mode, lcase, emoji, logging,
-                  out_extension='.tsv'):             #Update parser.csv to set extension
+                  yesterday_dict, today_dict, out_extension='.tsv'):             #Update parser.csv to set extension
         self.keywords = []
         for kw in keywords:
             self.keywords.append(kw)
@@ -24,6 +24,10 @@ class decoder:
 
         self.out_extension=out_extension
         
+        #Dictionaries to keep track of duplicate tweet IDs over all parsed files - logging
+        self.yesterday_dict = yesterday_dict
+        self.today_dict = today_dict
+
         self.emojis = {}
         if emoji is not None:
             with open(emoji, 'r') as emoji_file:
@@ -91,7 +95,18 @@ class decoder:
                             kwtext = parsed_text+' '+parsed_quote
                             self.n_tweets += 1
                             if decoder.checkForKWs(self, kwtext) == True: # Means that a keyword was found in the tweet
-                                decoder.writeToCSV(self, dic, parsed_text, parsed_quote, fileName, count)
+                                try: 
+                                    tweetid = ('\''+dic['id_str'])
+                                except:
+                                    try: tweetid = ('\''+str(dic['id'])) # t_id
+                                    except: tweetid = '\''
+                                if tweetid in self.yesterday_dict:
+                                    self.yesterday_dict[tweetid] += 1
+                                elif tweetid in self.today_dict:
+                                    self.today_dict[tweetid] += 1
+                                else:
+                                    self.today_dict[tweetid] = 1
+                                    decoder.writeToCSV(self, dic, parsed_text, parsed_quote, fileName, count)
                                 count += 1
                                 #if j[1] == 'done':
                                 #    f.close()
@@ -118,7 +133,6 @@ class decoder:
                             self.n_errors += 1
                             j = ['','more'] ### 
                             #break ### Break here when diagnosing errors
-                    
                     j = jsonline(line, tweet, status) # The last tweet will be ignored.
 
                 f.close()
@@ -143,12 +157,24 @@ class decoder:
                         #decoder._tweets_checked += 1 #increment the number of tweets checked
                         if decoder.checkForKWs(self, kwtext) == True: #means that a keyword was found in the tweet
                             #decoder._tweet_count += 1    #increment the count on the number of tweets printed
-                            decoder.writeToCSV(self, data, parsed_text, parsed_quote, fileName, count)
+                            try: 
+                                tweetid = ('\''+data['id_str'])
+                            except:
+                                try: tweetid = ('\''+str(data['id'])) # t_id
+                                except: tweetid = '\''
+                            if tweetid in self.yesterday_dict:
+                                self.yesterday_dict[tweetid] += 1
+                            elif tweetid in self.today_dict:
+                                self.today_dict[tweetid] += 1
+                            else:
+                                self.today_dict[tweetid] = 1
+                                decoder.writeToCSV(self, data, parsed_text, parsed_quote, fileName, count)
                             count += 1
                     
                 except: 
                     #traceback.print_exc()
                     self.n_tweets = 0
+                    self.today_dict = {}
                     print(fileName+' : HiMem failed! Trying with LoMem...') 
                     f.close()
                     try:
@@ -237,6 +263,7 @@ class decoder:
     def writeToCSV(self, data, parsed_text, parsed_quote, fn, count):
 
         entities = []
+
         outfile = self.dirOut+str(fn[:14]+'_data'+self.out_extension)   # Changed from .csv to .tsv (20180716 JC)
 
         ###################
