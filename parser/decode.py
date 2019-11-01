@@ -172,7 +172,7 @@ class decoder:
                             count += 1
                     
                 except: 
-                    #traceback.print_exc()
+                    traceback.print_exc()
                     self.n_tweets = 0
                     self.today_dict = {}
                     print(fileName+' : HiMem failed! Trying with LoMem...') 
@@ -258,6 +258,19 @@ class decoder:
         except: #if there are no coordinates then exception is called and make coords blank
             return ['','']
 
+    def getPolygonCoords(self, data):
+    	try:
+    		coords = data['place']['bounding_box']['coordinates']
+    		lat = 0
+    		lon = 0
+    		for i in range(len(coords[0])):
+    			lat += coords[0][i][1]
+    			lon += coords[0][i][0]
+    		lat = lat/len(coords[0])
+    		lon = lon/len(coords[0])
+    		return [str(lat), str(lon)]
+    	except:
+    		return ['', '']
 
     # THIS COULD USE A TEMPLATE FILE FOR BETTER PORTABILITY
     def writeToCSV(self, data, parsed_text, parsed_quote, fn, count):
@@ -296,7 +309,7 @@ class decoder:
         entities.append(str(data['user']['followers_count'])) # u_fo_in
         entities.append(str(data['user']['favourites_count'])) # u_likes
 
-
+        #Deprecated
         try: entities.append(str(int(data['user']['utc_offset'])/3600)) # u_utcoff
         except: entities.append('') 
 
@@ -304,7 +317,7 @@ class decoder:
             loc = parselogic.reformat(data['user']['location'], self.emojis, mode=1.0, lcase=self.lcase)
             entities.append(loc)
         except: entities.append('') 
-
+        #Deprecated
         if str(data['user']['geo_enabled']) == 'true':
             entities.append(1) # u_geotag
         else: entities.append(0) # u_geotag
@@ -353,10 +366,13 @@ class decoder:
         entities.append(date) # t_date
 
         coords = decoder.getCoords(self, data)
-        entities.append(coords[0]) # t_geolat
-        entities.append(coords[1]) # t_geolon
+        coords_str = str(coords[1])+' '+str(coords[0])
+        entities.append(coords_str) # t_geolat t_geolon
 
-        try: place =  data['place']['full_name'] 
+        poly_coords = decoder.getPolygonCoords(self, data)
+        entities.append(poly_coords[0]+' '+poly_coords[1])
+
+        try: place =  parselogic.reformat(data['place']['full_name'], self.emojis, mode=1.0, lcase=self.lcase)
         except: place = ''
         entities.append(place) # t_place
 
@@ -415,7 +431,7 @@ class decoder:
                                    'u_locate', 'u_geotag', 'u_lang', 'u_imgurl', 'u_bgurl',
                                    'u_privat', 'u_verify', 'u_n_capt',
                                    't_id', 't_text', 't_quote', 't_url', 
-                                   't_date', 't_geolat', 't_geolon',
+                                   't_date', 't_geopoint', 't_geopoly',
                                    't_place', 't_lang', 
                                    're_t_id', 're_u_id',
                                    'qu_t_id', 'qu_u_id', 

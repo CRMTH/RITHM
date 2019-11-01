@@ -255,7 +255,7 @@ def reformat(text, emojis, mode=1.0, modes=modes,
     # to human readable text using emoji dictionary
     if emojis:
         text = emojify(text, emojis)
-
+    text = text.replace('\n', '_newline_')
     #text = text.replace('\\\\', '\\') #Fixing backslach escapes
     return text
 
