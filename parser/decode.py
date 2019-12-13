@@ -259,18 +259,18 @@ class decoder:
             return ['','']
 
     def getPolygonCoords(self, data):
-    	try:
-    		coords = data['place']['bounding_box']['coordinates']
-    		lat = 0
-    		lon = 0
-    		for i in range(len(coords[0])):
-    			lat += coords[0][i][1]
-    			lon += coords[0][i][0]
-    		lat = lat/len(coords[0])
-    		lon = lon/len(coords[0])
-    		return [str(lat), str(lon)]
-    	except:
-    		return ['', '']
+        try:
+            coords = data['place']['bounding_box']['coordinates']
+            lat = 0
+            lon = 0
+            for i in range(len(coords[0])):
+                lat += coords[0][i][1]
+                lon += coords[0][i][0]
+            lat = lat/len(coords[0])
+            lon = lon/len(coords[0])
+            return [str(lat), str(lon)]
+        except:
+            return ['', '']
 
     # THIS COULD USE A TEMPLATE FILE FOR BETTER PORTABILITY
     def writeToCSV(self, data, parsed_text, parsed_quote, fn, count):
@@ -309,8 +309,7 @@ class decoder:
         entities.append(str(data['user']['followers_count'])) # u_fo_in
         entities.append(str(data['user']['favourites_count'])) # u_likes
 
-        #Deprecated
-        try: entities.append(str(int(data['user']['utc_offset'])/3600)) # u_utcoff
+        try: entities.append(data['user']['listed_count']) # u_utcoff
         except: entities.append('') 
 
         try: 
@@ -418,6 +417,30 @@ class decoder:
             entities.append('') 
             entities.append('') 
 
+        #Added for age prediction modelling
+        if str(data['user']['default_profile']).lower() == 'true':
+            entities.append(1)
+        else:
+            entities.append(0)
+
+        if str(data['user']['default_profile_image']).lower() == 'true':
+            entities.append(1)
+        else:
+            entities.append(0)
+
+        try: entities.append(len(data['entities']['hashtags']))
+        except: entities.append('')
+
+        try: entities.append(len(data['entities']['urls']))
+        except: entities.append('')
+
+        try: entities.append(len(data['entities']['user_mentions']))
+        except: entities.append('')
+
+        try:
+            media_list = data['extended_entities']['media'] 
+            entities.append(len(media_list))
+        except: entities.append(0)
        
         ### UPDATE TO REMOVE csv.writer DEPENDENCY
         with open(outfile, 'a') as csvfile:      
@@ -427,7 +450,7 @@ class decoder:
 
                 saveFile.writerow(['u_id', 'u_handle', 'u_name', 
                                    'u_desc', 'u_url', 'u_create',
-                                   'u_tweets', 'u_fo_out', 'u_fo_in', 'u_likes', 'u_utcoff',
+                                   'u_tweets', 'u_fo_out', 'u_fo_in', 'u_likes', 'u_list',
                                    'u_locate', 'u_geotag', 'u_lang', 'u_imgurl', 'u_bgurl',
                                    'u_privat', 'u_verify', 'u_n_capt',
                                    't_id', 't_text', 't_quote', 't_url', 
@@ -437,7 +460,9 @@ class decoder:
                                    'qu_t_id', 'qu_u_id', 
                                    'qu_n_qu', 'qu_n_re', 'qu_n_rt', 'qu_n_fav',
                                    'rt_t_tid', 'rt_u_id', 
-                                   'rt_n_qu', 'rt_n_re', 'rt_n_rt', 'rt_n_fav'])
+                                   'rt_n_qu', 'rt_n_re', 'rt_n_rt', 'rt_n_fav',
+                                   'u_profile', 'u_profile_img', 
+                                   't_hashtags', 't_urls', 't_mentions', 't_media'])
     
             saveFile.writerow([entity for entity in entities])
 
