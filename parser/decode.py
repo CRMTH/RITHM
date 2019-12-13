@@ -309,8 +309,9 @@ class decoder:
         entities.append(str(data['user']['followers_count'])) # u_fo_in
         entities.append(str(data['user']['favourites_count'])) # u_likes
 
-        try: entities.append(data['user']['listed_count']) # u_utcoff
-        except: entities.append('') 
+        #Deprecated
+        try: entities.append(str(int(data['user']['utc_offset'])/3600))
+        except: entities.append('')
 
         try: 
             loc = parselogic.reformat(data['user']['location'], self.emojis, mode=1.0, lcase=self.lcase)
@@ -428,6 +429,9 @@ class decoder:
         else:
             entities.append(0)
 
+        try: entities.append(data['user']['listed_count']) # u_utcoff
+        except: entities.append('') 
+
         try: entities.append(len(data['entities']['hashtags']))
         except: entities.append('')
 
@@ -450,7 +454,7 @@ class decoder:
 
                 saveFile.writerow(['u_id', 'u_handle', 'u_name', 
                                    'u_desc', 'u_url', 'u_create',
-                                   'u_tweets', 'u_fo_out', 'u_fo_in', 'u_likes', 'u_list',
+                                   'u_tweets', 'u_fo_out', 'u_fo_in', 'u_likes', 'u_utcoff',
                                    'u_locate', 'u_geotag', 'u_lang', 'u_imgurl', 'u_bgurl',
                                    'u_privat', 'u_verify', 'u_n_capt',
                                    't_id', 't_text', 't_quote', 't_url', 
@@ -461,7 +465,7 @@ class decoder:
                                    'qu_n_qu', 'qu_n_re', 'qu_n_rt', 'qu_n_fav',
                                    'rt_t_tid', 'rt_u_id', 
                                    'rt_n_qu', 'rt_n_re', 'rt_n_rt', 'rt_n_fav',
-                                   'u_profile', 'u_profile_img', 
+                                   'u_profile', 'u_profile_img', 'u_list',
                                    't_hashtags', 't_urls', 't_mentions', 't_media'])
     
             saveFile.writerow([entity for entity in entities])
