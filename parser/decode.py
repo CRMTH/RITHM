@@ -388,35 +388,31 @@ class decoder:
             entities.append('') # re_t_id
             entities.append('') # re_u_id
 
-        try:
-            entities.append('\''+data['quoted_status']['id_str']) # qu_t_tid
-            entities.append('\''+data['quoted_status']['user']['id_str']) # qu_u_id
-            entities.append(data['quoted_status']['retweet_count']) # qu_n_rt
-            entities.append(data['quoted_status']['favorite_count']) # qu_n_fav
-            entities.append(data['quoted_status']['reply_count']) # qu_n_rep
-            entities.append(data['quoted_status']['quote_count']) # qu_n_quo
-        except:
-            entities.append('') # qu_t_id
-            entities.append('') # qu_u_id
-            entities.append('') # etc. 
-            entities.append('') 
-            entities.append('') 
-            entities.append('') 
+        try: entities.append('\''+data['quoted_status']['id_str']) # qu_t_tid
+        except: entities.append('')
 
-        try:
-            entities.append('\''+data['retweeted_status']['id_str']) # rt_t_tid
-            entities.append('\''+data['retweeted_status']['user']['id_str']) # rt_u_id
-            entities.append(data['retweeted_status']['retweet_count']) # rt_n_rt
-            entities.append(data['retweeted_status']['favorite_count']) # rt_n_fav
-            entities.append(data['retweeted_status']['reply_count']) # rt_n_rep
-            entities.append(data['retweeted_status']['quote_count']) # rt_n_quo
-        except:
-            entities.append('') # rt_t_id
-            entities.append('') # rt_u_id
-            entities.append('') # etc.
-            entities.append('') 
-            entities.append('') 
-            entities.append('') 
+        try: entities.append('\''+data['quoted_status']['user']['id_str']) # qu_u_id
+        except: entities.append('')
+        try: entities.append(data['quoted_status']['retweet_count']) # qu_n_rt
+        except: entities.append('')
+        try: entities.append(data['quoted_status']['favorite_count']) # qu_n_fav
+        except: entities.append('')
+        try: entities.append(data['quoted_status']['reply_count']) # qu_n_rep
+        except: entities.append('')
+        try: entities.append(data['quoted_status']['quote_count']) # qu_n_quo
+        except: entities.append('')
+        try: entities.append('\''+data['retweeted_status']['id_str']) # rt_t_tid
+        except: entities.append('')
+        try: entities.append('\''+data['retweeted_status']['user']['id_str']) # rt_u_id
+        except: entities.append('')
+        try: entities.append(data['retweeted_status']['retweet_count']) # rt_n_rt
+        except: entities.append('')
+        try: entities.append(data['retweeted_status']['favorite_count']) # rt_n_fav
+        except: entities.append('')
+        try: entities.append(data['retweeted_status']['reply_count']) # rt_n_rep
+        except: entities.append('')
+        try: entities.append(data['retweeted_status']['quote_count']) # rt_n_quo
+        except: entities.append('')
 
         #Added for age prediction modelling
         if str(data['user']['default_profile']).lower() == 'true':
