@@ -30,13 +30,37 @@ from airflow.models import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.dummy_operator import DummyOperator
+from airflow.utils.email import send_email
 
 local_tz = pendulum.timezone("America/New_York")
+
+def notify_email(contextDict, **kwargs):
+    """Send custom email alerts."""
+
+    dag_id = contextDict['dag'].dag_id
+    task_id = contextDict['task'].task_id
+
+    # email title.
+    title = "Airflow alert: {} {} Failed".format(dag_id, task_id)
+
+    # email contents
+    body = """
+    Hi Everyone, <br>
+    <br>
+    There's been an error in the {} step of the {} job for {}.<br>
+    <br>
+    Forever yours,<br>
+    Airflow bot <br>
+    """.format(task_id, dag_id, contextDict['yesterday_ds'])
+
+    send_email('welling@psc.edu', title, body)
+
 
 args = {
     'owner': 'Airflow',
     'start_date': datetime(2020, 2, 1, tzinfo=local_tz),
     'xcom_push': True,
+    'on_failure_callback': notify_email
 }
 
 def compute_yesterday_year(dag, yesterday):
