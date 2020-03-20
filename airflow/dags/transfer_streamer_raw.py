@@ -53,7 +53,7 @@ def notify_email(contextDict, **kwargs):
     Airflow bot <br>
     """.format(task_id, dag_id, contextDict['yesterday_ds'])
 
-    send_email('welling@psc.edu', title, body)
+    send_email(['welling@psc.edu', 'colditzjb@pitt.edu'], title, body)
 
 
 args = {
