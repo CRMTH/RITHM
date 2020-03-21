@@ -81,7 +81,6 @@ def notify_success_email(contextDict, **kwargs):
 
     send_email(['welling@psc.edu', 'colditzjb@pitt.edu'], title, body)
 
-
 args = {
     'owner': 'Airflow',
     'start_date': datetime(2020, 2, 1, tzinfo=local_tz),
@@ -107,17 +106,16 @@ dag = DAG(
 
 kill_streamer = BashOperator(
     task_id='kill_streamer',
-    bash_command='sudo -u {{real_user}} ssh {{src_host}} rm {{src_dir}}/DeleteToKill.txt',
+    bash_command='sudo -u {{real_user}} ssh {{src_host}} rm {{src_dir}}/DeleteToKill.txt ',
     dag=dag,
 )
 
 start_streamer = BashOperator(
     task_id='start_streamer',
-    bash_command= 'sudo -u {{real_user}} ssh {{src_host}} bash {{src_dir}}/runstreamer.sh',
+    bash_command='sudo -u {{real_user}} ssh {{src_host}} "nohup bash {{src_dir}}/runstreamer.sh </dev/null > /dev/null 2>&1 & " ',
     dag=dag,
     on_success_callback=notify_success_email
 )
-
 
 kill_streamer >> start_streamer
 
