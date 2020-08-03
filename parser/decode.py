@@ -7,7 +7,7 @@ class decoder:
 
     # MAY WANT TO INPUT SOME OF THESE ARGUMENTS W/IN A DICTIONARY?
     def __init__ (self, keywords, dirIn, dirOut,
-                  hiMem, mode, lcase, emoji, logging,
+                  hiMem, mode=1, lcase, emoji, logging,
                   yesterday_dict, today_dict, out_extension='.tsv'):             #Update parser.csv to set extension
         self.keywords = []
         for kw in keywords:
@@ -293,7 +293,7 @@ class decoder:
         else: entities.append('') 
 
         if data['user']['description']:
-            desc = parselogic.reformat(data['user']['description'], self.emojis, mode=1.0, lcase=self.lcase)
+            desc = parselogic.reformat(data['user']['description'], self.emojis, mode=self.mode, lcase=self.lcase)
             entities.append(desc)#.encode('utf-8')) # u_desc
         else: entities.append('') 
 
@@ -314,7 +314,7 @@ class decoder:
         except: entities.append('')
 
         try: 
-            loc = parselogic.reformat(data['user']['location'], self.emojis, mode=1.0, lcase=self.lcase)
+            loc = parselogic.reformat(data['user']['location'], self.emojis, mode=self.mode, lcase=self.lcase)
             entities.append(loc)
         except: entities.append('') 
         #Deprecated
@@ -353,10 +353,10 @@ class decoder:
             except: t_id = '\''
         entities.append(t_id) # t_id
 
-        text = parselogic.reformat(parsed_text, self.emojis, mode=3.5, lcase=self.lcase)
+        text = parselogic.reformat(parsed_text, self.emojis, mode=self.mode, lcase=self.lcase)
         entities.append(text) # t_text
 
-        quote = parselogic.reformat(parsed_quote, self.emojis, mode=3.5, lcase=self.lcase)
+        quote = parselogic.reformat(parsed_quote, self.emojis, mode=self.mode, lcase=self.lcase)
         entities.append(quote) # t_quote
 
         entities.append('http://twitter.com/'+str(data['user']['screen_name'])+'/status/'+t_id.strip('\'')) # t_url
@@ -442,15 +442,8 @@ class decoder:
             entities.append(len(media_list))
         except: entities.append(0)
 
-
-        # This isn't needed   
-        #text_raw = parselogic.reformat(parsed_text, emojis=None, mode=1.0, lcase=False, ht_include=False)
-        #entities.append(text_raw) # t_text_raw
-
-        #quote_raw = parselogic.reformat(parsed_quote, emojis=None, mode=1.0, lcase=False, ht_include=False)
-        #entities.append(quote_raw) # t_quote_raw
         
-        ### UPDATE TO REMOVE csv.writer DEPENDENCY
+        ### Might want to update to csv.writer dependency? 
         with open(outfile, 'a') as csvfile:      
             saveFile = csv.writer(csvfile, delimiter='\t', lineterminator='\n')        
             if count == 0:
@@ -470,7 +463,7 @@ class decoder:
                                    'rt_t_tid', 'rt_u_id', 
                                    'rt_n_qu', 'rt_n_re', 'rt_n_rt', 'rt_n_fav',
                                    'u_profile', 'u_profile_img', 'u_list',
-                                   't_hashtags', 't_urls', 't_mentions', 't_media']) #,'t_text_raw', 't_quote_raw'])
+                                   't_hashtags', 't_urls', 't_mentions', 't_media'])
     
             saveFile.writerow([entity for entity in entities])
 
