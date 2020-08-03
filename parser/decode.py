@@ -353,10 +353,10 @@ class decoder:
             except: t_id = '\''
         entities.append(t_id) # t_id
 
-        text = parselogic.reformat(parsed_text, self.emojis, mode=1.0, lcase=self.lcase)
+        text = parselogic.reformat(parsed_text, self.emojis, mode=3.5, lcase=self.lcase)
         entities.append(text) # t_text
 
-        quote = parselogic.reformat(parsed_quote, self.emojis, mode=1.0, lcase=self.lcase)
+        quote = parselogic.reformat(parsed_quote, self.emojis, mode=3.5, lcase=self.lcase)
         entities.append(quote) # t_quote
 
         entities.append('http://twitter.com/'+str(data['user']['screen_name'])+'/status/'+t_id.strip('\'')) # t_url
@@ -441,7 +441,15 @@ class decoder:
             media_list = data['extended_entities']['media'] 
             entities.append(len(media_list))
         except: entities.append(0)
-       
+
+
+        # This isn't needed   
+        #text_raw = parselogic.reformat(parsed_text, emojis=None, mode=1.0, lcase=False, ht_include=False)
+        #entities.append(text_raw) # t_text_raw
+
+        #quote_raw = parselogic.reformat(parsed_quote, emojis=None, mode=1.0, lcase=False, ht_include=False)
+        #entities.append(quote_raw) # t_quote_raw
+        
         ### UPDATE TO REMOVE csv.writer DEPENDENCY
         with open(outfile, 'a') as csvfile:      
             saveFile = csv.writer(csvfile, delimiter='\t', lineterminator='\n')        
@@ -462,7 +470,7 @@ class decoder:
                                    'rt_t_tid', 'rt_u_id', 
                                    'rt_n_qu', 'rt_n_re', 'rt_n_rt', 'rt_n_fav',
                                    'u_profile', 'u_profile_img', 'u_list',
-                                   't_hashtags', 't_urls', 't_mentions', 't_media'])
+                                   't_hashtags', 't_urls', 't_mentions', 't_media']) #,'t_text_raw', 't_quote_raw'])
     
             saveFile.writerow([entity for entity in entities])
 
