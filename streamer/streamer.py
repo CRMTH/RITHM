@@ -236,7 +236,7 @@ def setStreamer():
                 elif len(KW[1]) == 0 or KW[1] == False or KW[1] == None:
                     stream.statuses.filter(track=KW[0]) #Keywords, no language                                   
                 else:
-                    stream.statuses.filter(track=KW[0], languages=KW[1]) #Keywords + language
+                    stream.statuses.filter(track=KW[0], language=KW[1]) #Keywords + language
                     
             
         except: #Error handling
