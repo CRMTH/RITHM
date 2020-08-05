@@ -7,7 +7,7 @@ class decoder:
 
     # MAY WANT TO INPUT SOME OF THESE ARGUMENTS W/IN A DICTIONARY?
     def __init__ (self, keywords, dirIn, dirOut,
-                  hiMem, mode=1, lcase, emoji, logging,
+                  hiMem, mode, lcase, emoji, logging,
                   yesterday_dict, today_dict, out_extension='.tsv'):             #Update parser.csv to set extension
         self.keywords = []
         for kw in keywords:
