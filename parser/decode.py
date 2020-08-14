@@ -175,12 +175,12 @@ class decoder:
                     traceback.print_exc()
                     self.n_tweets = 0
                     self.today_dict = {}
-                    print(fileName+' : HiMem failed! Trying with LoMem...') 
+                    print('\n'+fileName+' : HiMem failed! Trying with LoMem...') 
                     f.close()
                     try:
                         decoder.fixjson(self, dirIn, fileName, hiMem=False)
                     except:
-                        print(fileName+' : LoMem also failed! See exception.') 
+                        print('\n'+fileName+' : LoMem failed! See exception.') 
                         traceback.print_exc()
                         pass
                     return False

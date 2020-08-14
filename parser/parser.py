@@ -49,10 +49,6 @@ if len(sys.argv) > 1: # If command line arguments were passed
                 start = int(sys.argv[i+1])
                 end = int(sys.argv[i+2])
 
-            # DEPRECIATED: indicates hiMem=True
-            #if arg.lower() in ['-h','-hi','-himem','-high','-highmem']:
-            #    hiMem = True
-
             # indicates hiMem=False
             if arg.lower() in ['-l','-lo','-lomem','-low','-lowmem']:
                 loMem = True
@@ -150,7 +146,7 @@ for line in open(dir_path+template):
                     emoji = None
 
 
-            # DEPRECIATED: set combine to dictate how output files are combined
+            # DEPRECATED: set combine to dictate how output files are combined
             #if cmd == 'combine':
             #    combine = val
             #    if val.lower() in confirm:
@@ -158,14 +154,14 @@ for line in open(dir_path+template):
             #    else:
             #        combine = False
     
-            # DEPRECIATED: set "clear" to True, to clear temp files before decoding
+            # DEPRECATED: set "clear" to True, to clear temp files before decoding
             #if cmd.lower() == 'clear':
             #    if val.lower() in confirm:
             #        clear = True
             #    else:
             #        clear = False
         
-            # DEPRECIATED: set "geo" to True to retrieve only geotagged tweets
+            # DEPRECATED: set "geo" to True to retrieve only geotagged tweets
             #if cmd == 'geo':
             #    if val.lower() in confirm:
             #        geo = True
