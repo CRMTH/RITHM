@@ -307,7 +307,7 @@ modes = {'tsv':'1.0',
 #
 #   "lcase" argument is optional. All text will be reduced to lowercase. 
 #   "ht_include" argument is optional. Includes hashtags w/ basic keywords. 
-#   "emoji" argument contains the emoji dict. Will be if filepath invalid. 
+#   "emoji" argument contains the emoji dict. Will be empty if filepath invalid. 
 ###
 def reformat(text, emojis, mode=1.0, modes=modes, 
              lcase=False, ht_include=True):
