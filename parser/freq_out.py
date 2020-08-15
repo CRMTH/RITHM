@@ -81,6 +81,7 @@ if __name__ == '__main__':
     end = cv['end']
     dir_in = cv['dir_in']
     dir_in_kws = cv['dir_in_kws']
+    f_kws = cv['f_kws']
     dir_out = cv['dir_out']
     f_stem = cv['f_stem']
     f_ext = cv['f_ext']
@@ -89,7 +90,7 @@ if __name__ == '__main__':
     rt_status = cv['rt_status']
 
     # Get keywords and data dictionary
-    keywords = parselogic.kwslist(dir_in_kws)
+    keywords = parselogic.kwslist(dir_in_kws, f_kws)
     dw = DataDict(dir_in, start, end, rt_ignore=rt_ignore, keywords=keywords)
 
     with open(dir_out+f_stem+'frequencies'+rt_status+f_ext, 'w+') as f:

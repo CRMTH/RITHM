@@ -17,11 +17,11 @@ import os, datetime, re, sys
 ###
 def cmdvars(args=sys.argv):
     make_dir = False
-    sub_dir = False
+    sub_dir = 0
     d = {}
 
     # Default directory values
-    d['dir_in'] = './'
+    d['dir_in'] = './data/'
     d['dir_in_kws'] = None
     d['dir_out'] = None
 
@@ -29,7 +29,10 @@ def cmdvars(args=sys.argv):
     d['f_ext'] = '.tsv'
     d['delimiter'] = '\t'
     
-    # Default file stem
+    # Default files & file stem
+    d['f1'] = None
+    d['f2'] = None
+    d['f_kws'] = None
     d['f_stem'] = ''
 
     # Default datestamps in filename-type format (int; YYYYMMDD)
@@ -57,10 +60,6 @@ def cmdvars(args=sys.argv):
             if arg.lower() in ['-dir','-in','-indir','-dirin']:
                 d['dir_in'] = str(args[i+1])
 
-            # '-dirkws' indicates input directory for KWS files (MUST include trailing slash)
-            if arg.lower() in ['-dirkws','-dirkw','-kwsdir','-kwdir']:
-                d['dir_in_kws'] = str(args[i+1])
-
             # '-out' indicates output directory (MUST include trailing slash)
             # '-mkout' will create that directory if it does not exist
             # dir_out starting with './' will make subdirectory of dir_in
@@ -68,9 +67,16 @@ def cmdvars(args=sys.argv):
                 d['dir_out'] = str(args[i+1])
                 if arg.lower() in ['-mkdir', '-mkout']:
                     make_dir = True
-                if d['dir_out'][0:2] == './':
+                if d['dir_out'][0:2] == './' or d['dir_out'][0:3] == '../':
                     make_dir = True
-                    sub_dir = True
+
+            # '-file' or '-filein' indicates a primary file to read
+            if arg.lower() in ['-file','-file1','-f','-f1','-filein','-infile']:
+                d['f1'] = str(args[i+1])
+
+            # '-file2' or '-fileout' indicates a secondary file to read or an output file
+            if arg.lower() in ['-file2','-f2','-fileout','-outfile']:
+                d['f2'] = str(args[i+1])
 
             # '-fstem' indicates a stem to append to beginning of output file name
             if arg.lower() in ['-filestem','-fstem','-stem','-fs']:
@@ -87,6 +93,15 @@ def cmdvars(args=sys.argv):
                     if d['f_ext'] == '.csv':
                         d['delimiter'] = ','
 
+            # '-kwdir' indicates input directory for KWS files (MUST include trailing slash)
+            if arg.lower() in ['-dirkws','-dirkw','-kwsdir','-kwdir','-kwd']:
+                d['dir_in_kws'] = str(args[i+1])
+
+            # '-kwfile' indicates specific KWS file
+            # directory paths here override '-kwdir', and are relative to '-dir'
+            if arg.lower() in ['-filekws','-filekw','-kwsfile','-kwfile','-kwf']:
+                d['f_kws'] = str(args[i+1])
+
             # '-rt' indicates that RTs should be included
             if arg.lower() in ['-rt', '-rts']:
                 d['rt_include'] = True
@@ -100,8 +115,26 @@ def cmdvars(args=sys.argv):
         if d['dir_out'] is None:
             d['dir_out'] = d['dir_in']
             
-        if sub_dir:
+        if d['f_kws'] is not None:
+            if d['f_kws'][0:2] == './':
+                f_kws = d['f_kws'][2:]
+                d['dir_in_kws'] = d['dir_in']
+                d['f_kws'] = f_kws
+            elif d['f_kws'][0:3] == '../':
+                d['dir_in_kws'] = ''
+                dir_back = ('/').join(d['dir_in'].split('/')[:-2]+[''])
+                f_kws = dir_back+d['f_kws'][3:]
+                d['f_kws'] = f_kws
+            elif '/' in d['f_kws']:
+                d['dir_in_kws'] = ''
+
+
+        if d['dir_out'][0:2] == './':
             dir_out = d['dir_in']+d['dir_out'][2:]
+            d['dir_out'] = dir_out
+        elif d['dir_out'][0:3] == '../':
+            dir_back = ('/').join(d['dir_in'].split('/')[:-2]+[''])
+            dir_out = dir_back+d['dir_out'][3:]
             d['dir_out'] = dir_out
         if make_dir:
             mkdir(d['dir_out'])
@@ -118,7 +151,9 @@ This is here for easy copy/paste - not all values are used by all scripts.
     dir_in = cv['dir_in']
     dir_in_kws = cv['dir_in_kws']
     dir_out = cv['dir_out']
-    f_stem = cv['f_stem']
+    f1 = cv['f1']
+    f2 = cv['f2']
+    f_kws = cv['f_kws']
     f_ext = cv['f_ext']
     delimiter = cv['delimiter']
     rt_include = cv['rt_include']
@@ -175,16 +210,22 @@ def filelist(dir_in, f_ext='.tsv', tsv_type='raw', start=None, end=None, silent=
 #   Blank lines and hashed-out lines are ignored. 
 #
 ###
-def kwslist(dir_in_kws, f_ext='.kws', silent=False):
+def kwslist(dir_in_kws, f_kws=None, f_ext='.kws', silent=False):
     kws_list = []
-    kws_files = filelist(dir_in_kws, f_ext=f_ext, silent=silent)
-    for f in kws_files:
-        with open(dir_in_kws+f, 'r') as o:
-            for l in o: #for line in open file
+    if f_kws:
+        with open(dir_in_kws+f_kws, 'r') as kf:
+            for l in kf: #for line in file
                 if len(l.strip())>0 and l[0] != '#':
                     kws_list.append(l.strip())
-                else:
-                    pass
+    else:
+        kws_files = filelist(dir_in_kws, f_ext=f_ext, silent=silent)
+        for f in kws_files:
+            with open(dir_in_kws+f, 'r') as kf:
+                for l in kf: #for line in file
+                    if len(l.strip())>0 and l[0] != '#':
+                        kws_list.append(l.strip())
+                    else:
+                        pass
     if not silent:
         print('\nKeyword filters:')
         print(sorted(list(set(kws_list))))
