@@ -1,50 +1,200 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue May 29 20:18:09 2018
+This script defines functions used throughout the RITHM repository. 
+Changes here will broadly impact RITHM functionality. Handle with care.
+
+Created on 2018-05-29
 @author: colditzjb
 
 """
-import os, datetime, re
+import os, datetime, re, sys
 
-
-### ts function
-# Output a timestamp string in "YYYYMMDDhhmmss" format. 
+### cmdvars function
 #
-#    ts() = current date/time.
-#    
-#    "stamp" argument takes a Twitter-formatted timestamp and converts it.
+# Set default variables and look for additional command line input. 
+# Output a dictionary of variables used in various other RITHM scripts.
 #
 ###
-def ts(stamp=None, reform=None):
-    fail = False
-    if stamp is None:
-        timestamp = str(datetime.datetime.today().strftime('%Y%m%d%H%M%S'))
-        r = timestamp
-    else:
-        months={'Jan':'01','Feb':'02','Mar':'03','Apr':'04',
-                'May':'05','Jun':'06','Jul':'07','Aug':'08',
-                'Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
-        try: # This will convert Twitter timestamp to standard format
-            d = stamp.split(' ')
-            m = months[d[1]]
-            t = d[3].split(':')
-            r = d[5]+m+d[2]+t[0]+t[1]+t[2]
-        except:
-            if len(stamp)==14:
-                r = stamp
+def cmdvars(args=sys.argv):
+    make_dir = False
+    sub_dir = False
+    d = {}
+
+    # Default directory values
+    d['dir_in'] = './'
+    d['dir_in_kws'] = None
+    d['dir_out'] = None
+
+    # Default file extension and delimiter
+    d['f_ext'] = '.tsv'
+    d['delimiter'] = '\t'
+    
+    # Default file stem
+    d['f_stem'] = ''
+
+    # Default datestamps in filename-type format (int; YYYYMMDD)
+    #d['start'] = 20060321 # Default to first tweet in recorded history 
+    d['start'] = 20170101 # Default to 1/1/2017 
+    d['end'] = 20301231 # Default to 12/31/2030
+
+    # Default retweet handling
+    d['rt_include'] = False
+    d['rt_ignore'] = True
+    d['rt_status'] = '_noRTs'
+
+    #keywords = []
+
+    if len(args) > 1: # If command line arguments were passed
+        i = 0
+        for arg in args:
+
+            # '-date' indicates start/end dates (req. 2 MMDDYYYY objects)
+            if arg.lower() in ['-date','-dates']:
+                d['start'] = int(args[i+1])
+                d['end'] = int(args[i+2])
+
+            # '-dir' indicates input directory (MUST include trailing slash)
+            if arg.lower() in ['-dir','-in','-indir','-dirin']:
+                d['dir_in'] = str(args[i+1])
+
+            # '-dirkws' indicates input directory for KWS files (MUST include trailing slash)
+            if arg.lower() in ['-dirkws','-dirkw','-kwsdir','-kwdir']:
+                d['dir_in_kws'] = str(args[i+1])
+
+            # '-out' indicates output directory (MUST include trailing slash)
+            # '-mkout' will create that directory if it does not exist
+            # dir_out starting with './' will make subdirectory of dir_in
+            if arg.lower() in ['-out','-dirout','-outdir','-mkdir','-mkout']:
+                d['dir_out'] = str(args[i+1])
+                if arg.lower() in ['-mkdir', '-mkout']:
+                    make_dir = True
+                if d['dir_out'][0:2] == './':
+                    make_dir = True
+                    sub_dir = True
+
+            # '-fstem' indicates a stem to append to beginning of output file name
+            if arg.lower() in ['-filestem','-fstem','-stem','-fs']:
+                d['f_stem'] = str(args[i+1])+'_'
+
+            # '-ext' indicates file extension (MUST include the ".")
+            # '-csv' is a shortcut that requires no additional argument
+            if arg.lower() in ['-ext','-extension','-fext', '-csv']:
+                if arg.lower() == '-csv':
+                    d['f_ext'] = '.csv'
+                    d['delimiter'] = ','
+                else:
+                    d['f_ext'] = lower(str(args[i+1]))
+                    if d['f_ext'] == '.csv':
+                        d['delimiter'] = ','
+
+            # '-rt' indicates that RTs should be included
+            if arg.lower() in ['-rt', '-rts']:
+                d['rt_include'] = True
+                d['rt_ignore'] = False
+                d['rt_status'] = '_withRTs'
+
+            i+=1
+
+        if d['dir_in_kws'] is None:
+            d['dir_in_kws'] = d['dir_in']
+        if d['dir_out'] is None:
+            d['dir_out'] = d['dir_in']
+            
+        if sub_dir:
+            dir_out = d['dir_in']+d['dir_out'][2:]
+            d['dir_out'] = dir_out
+        if make_dir:
+            mkdir(d['dir_out'])
+            
+
+    return d
+"""
+Here's example syntax for using cmdvars function in other RITHM scripts.
+This is here for easy copy/paste - not all values are used by all scripts.
+
+    cv = parselogic.cmdvars()
+    start = cv['start']
+    end = cv['end']
+    dir_in = cv['dir_in']
+    dir_in_kws = cv['dir_in_kws']
+    dir_out = cv['dir_out']
+    f_stem = cv['f_stem']
+    f_ext = cv['f_ext']
+    delimiter = cv['delimiter']
+    rt_include = cv['rt_include']
+    rt_ignore = cv['rt_ignore']
+    rt_status = cv['rt_status']
+
+"""
+
+
+### filelist function
+#
+# Returns a list of files matching certain criteria within a given directory. 
+#    
+#    "tsv_type" settings: 
+#       "raw" handles tsv files as daily tweet files ("start" and "end" req.)
+#
+###
+def filelist(dir_in, f_ext='.tsv', tsv_type='raw', start=None, end=None, silent=False, quiet=True):
+    if silent == True: quiet = True
+    files_list = []
+    files_all = os.listdir(dir_in)
+    files_all.sort()
+    if not silent: print('\n----- '+f_ext+' files in '+dir_in)
+    for f in files_all:
+        if f[-4:] == f_ext:
+            if f_ext in ['.tsv','.csv']:
+                if tsv_type=='raw':
+                    try:
+                        if int(f[:8]) >= int(start):
+                            if int(f[:8]) <=int(end):
+                                files_list.append(f)
+                                if not silent: print(f+' included')
+                            else: 
+                                if not quiet: print(f+' excluded')
+                        else: 
+                            if not quiet: print(f+' excluded')
+                    except: 
+                        if not quiet: print(f+' ignored')
+                        pass
+                else:
+                    pass # May need to handle other types of TSV files later?
+
             else:
-                r='Failed to parse timestamp!'
-                fail=True
-    if reform and not fail: # This will output a readable timestamp for analysis
-        d = '/'.join([r[4:6],r[6:8],r[:4]])
-        t = ':'.join([r[8:10],r[10:12],r[12:14]])
-        r = d+' '+t
-    return r
+                if not silent: print(f+' included')
+                files_list.append(f)
+
+    return sorted(files_list)
+
+
+### kwslist function
+#
+# Returns de-duplicated list of keywords from ALL .kws type files in a dir. 
+#   Each line is treated as a separate keyword string. 
+#   Blank lines and hashed-out lines are ignored. 
+#
+###
+def kwslist(dir_in_kws, f_ext='.kws', silent=False):
+    kws_list = []
+    kws_files = filelist(dir_in_kws, f_ext=f_ext, silent=silent)
+    for f in kws_files:
+        with open(dir_in_kws+f, 'r') as o:
+            for l in o: #for line in open file
+                if len(l.strip())>0 and l[0] != '#':
+                    kws_list.append(l.strip())
+                else:
+                    pass
+    if not silent:
+        print('\nKeyword filters:')
+        print(sorted(list(set(kws_list))))
+        print('')
+    return sorted(list(set(kws_list)))
 
 
 ### mkdir function
 #
-# A scrappy way to create a new directory, when needed. Use this function
+# A scrappy way to create a new directory if it's not there. Use this function
 # on a directory before trying to write out new files to it. 
 #
 #   "dirs" argument can handle a string or list of strings that correspond 
@@ -52,23 +202,47 @@ def ts(stamp=None, reform=None):
 #       This argument is REQUIRED and strings must end with a "/"
 #
 #   "base" argument is an optional parent directory to work from.
+#       This must be a string ending with "/"
 #
 ###
-def mkdir(dirs, base=''):
-    def makeit(base, dirs):
+def mkdir(dirs, base='', silent=False):
+    def makeit(base, dira):
         if dirs[-1] != '/':
-            print(str(dirs)+' is an invalid directory name!')
-        elif not os.path.exists(base+dirs):
-            os.makedirs(base+dirs)
-            
-    if type(dirs) is str:
-        makeit(base, dirs)
-    elif type(dirs) is list:
-        for d in dirs:
-            makeit(base, d)
-    else:
-        return None
+            if not silent:
+                print('')
+                print(str(base)+str(dira)+' directory was not created.')
+                print('Directory string must end with a forward slash.\n')
+        elif not os.path.exists(base+dira):
+            os.makedirs(base+dira)
+            if not silent:
+                print('\nNew directory created:'+str(base)+str(dira)+'\n')
 
+    if base is str and len(base)>0 and base[-1] != '/':
+        if not silent:
+            print('')
+            print(str(base)+' is not a valid base path.')
+            print('Directory string must end with a forward slash.\n')
+        return None
+    else:
+        if type(dirs) is str:
+            makeit(base, dirs)
+        elif type(dirs) is list:
+            for d in dirs:
+                makeit(base, d)
+        else:
+            if not silent:
+                print('')
+                print(str(dirs)+' is not valid input.')
+                print('mkdir(dirs) must be string or list format.\n')
+            return None
+
+
+### emojify function
+#
+# Documentation not provided.
+# This is used in reformat function.
+#
+###
 def emojify(text, emojis):
     if '\\u' in text.lower():
         text = text.replace('\\U' , '\\u')
@@ -86,7 +260,7 @@ def emojify(text, emojis):
                     word_1 = word[6:len(word)]
                     words[words.index(word)] = emojis[word[0:6]] + ' ' + word_1
                 elif word[0:4] in emojis:
-                    word_1 = word[6:len(word)]
+                    word_1 = word[4:len(word)]
                     words[words.index(word)] = emojis[word[0:4]] + ' ' + word_1
 
 
@@ -95,7 +269,7 @@ def emojify(text, emojis):
                     
                     
 """
-                #This is a different approach. May have additional processing overhaed
+                #This is an old approach. May have additional processing overhaed
                 else:
                     stem = ''
                     i_char = 0
@@ -109,7 +283,7 @@ def emojify(text, emojis):
 """
 
 
-# This is a crude, hierarchical way to organize modes
+# This is a crude, hierarchical way to organize modes for reformat function
 modes = {'tsv':'1.0',
          'csv':'1.5',
          'two':'2.0',
@@ -132,8 +306,8 @@ modes = {'tsv':'1.0',
 #     4.5 'kws' = Format for keyword matching (default for search procedures)
 #
 #   "lcase" argument is optional. All text will be reduced to lowercase. 
-#   "ht_include" argument is optional. Hashtags will be included w/ basic keywords. 
-#   "emoji" argument contains the emoji dictionary. Will be empty if filepath is invalid. 
+#   "ht_include" argument is optional. Includes hashtags w/ basic keywords. 
+#   "emoji" argument contains the emoji dict. Will be if filepath invalid. 
 ###
 def reformat(text, emojis, mode=1.0, modes=modes, 
              lcase=False, ht_include=True):
@@ -260,8 +434,11 @@ def reformat(text, emojis, mode=1.0, modes=modes,
     return text
 
 
-
+### reformat function
+# 
 # This performs matching on text, using boolean test phrases
+#
+###
 def match(test, text):
     ### Term syntax includes '*' as wildcard and '!' as NOT operator
     # wildcards do not respect space delimitations (full-text inclusive)
@@ -271,7 +448,7 @@ def match(test, text):
     
     test = test.replace('#' , '# ') # Reformat to catch hashtags as keywords...
     while '  ' in test:
-        text = test.replace('  ' , ' ')
+        text = test.replace('  ' , ' ') # Make multuple spaces into single spaces 
 
 
     
@@ -346,4 +523,68 @@ def match(test, text):
         
     # Returns True/False for a logical keyword test within a given text
     return ParentMatch(test, text)
+
+
+###############################################################################
+
+
+### OTHER FUNCTIONS
+# 
+# THESE ARE EITHER EXPERIMENTAL OR DEPRECATED
+#
+###
+
+
+### ts function 
+#
+# TO BE DEPRECATED AND REPLACED (there is a better version underway)
+#
+# Output a timestamp string in "YYYYMMDDhhmmss" format. 
+#
+#    ts() = current date/time.
+#    
+#    "stamp" argument takes a Twitter-formatted timestamp and converts it.
+#
+###
+def ts(stamp=None, reform=None):
+    fail = False
+    if stamp is None:
+        timestamp = str(datetime.datetime.today().strftime('%Y%m%d%H%M%S'))
+        r = timestamp
+    else:
+        months={'Jan':'01','Feb':'02','Mar':'03','Apr':'04',
+                'May':'05','Jun':'06','Jul':'07','Aug':'08',
+                'Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
+        try: # This will convert Twitter timestamp to standard format
+            d = stamp.split(' ')
+            m = months[d[1]]
+            t = d[3].split(':')
+            r = d[5]+m+d[2]+t[0]+t[1]+t[2]
+        except:
+            if len(stamp)==14:
+                r = stamp
+            else:
+                r='Failed to parse timestamp!'
+                fail=True
+    if reform and not fail: # This will output a readable timestamp for analysis
+        d = '/'.join([r[4:6],r[6:8],r[:4]])
+        t = ':'.join([r[8:10],r[10:12],r[12:14]])
+        r = d+' '+t
+    return r
+
+
+
+### locmatch function
+#
+# This is only a placeholder. There is a potential use case in freq_out.py 
+# Not expected to be a high priority for future development.
+#
+###
+def locmatch(location):
+    if 'pennsylvania' in location.lower():
+        return 1
+    elif ', PA' in location:
+        return 1
+    else:
+        return 0
 
