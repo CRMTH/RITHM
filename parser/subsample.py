@@ -13,7 +13,7 @@ import parselogic
 class subsample(object):
     """
     The "subsample" class is used to systematically subsample RITHM output
-    as CSV files from a defined system directory.
+    as TSV files from a defined system directory.
     
     . 
     """
@@ -21,9 +21,10 @@ class subsample(object):
     ##### should be fixed so that the process is aware of standard variable names
     ##### and calculates column numbers accordingly. 
     def __init__(self, data, dirout='', header=True, combine=True,
-                 kw_redux=[], kw_incol=12, quote_incol=13, 
-                 rt_ignore=True, rt_incol=9, 
-                 geo_only=False, geo_incol=16):  
+                 start='00000000', end='99999999',
+                 kw_redux=[], kw_incol=20, quote_incol=21, 
+                 rt_ignore=True, rt_incol=36, 
+                 geo_only=False, geo_incol=12):  
         self.data = data
         self.kw_incol = kw_incol
         self.returns = {}                    
@@ -51,57 +52,56 @@ class subsample(object):
             i_kw = 0
             i_rt_kw = 0
             for fn in files:
-                ###### <--- Implement date range constraints about here
                 if fn[-4:] in ['.csv', '.tsv']:
-                    i_line = 0
-                    with open(data+fn, 'r') as infile:
-                        for line in infile.readlines():
-                            if i_line==0:
-                                if '\t' in line: self.delimit = '\t' #Determine if TSV file format from 1st line
+                    if int(fn[:8]) >= int(start) and int(fn[:8]) <= int(end): # set start end end dates 
+                        i_line = 0
+                        with open(data+fn, 'r') as infile:
+                            for line in infile.readlines():
+                                if i_line==0:
+                                    if '\t' in line: self.delimit = '\t' #Determine if TSV file format from 1st line
+                                if i_line==0 and header:
+                                    head = line #If first line is expected to be a header, save the line as "head"
+                                else:
+                                    if read_tweet: # If tweets need to be read
+                                        l_list = line.split(self.delimit)
+                                        added = False
+                                        ignored = False
+                                        is_rt = False
+                                        if rt_ignore and len(l_list[rt_incol]) > 0:
+                                            i_rt_total = i_rt_total + 1
+                                            is_rt = True
+                                            ignored = True # Ignore RTs
+                                        if geo_only and len(l_list[geo_incol]) < 1:
+                                            ignored = True # Ignore non-Geocoded
 
-                            if i_line==0 and header:
-                                head = line #If first line is expected to be a header, save the line as "head"
-                            else:
-                                if read_tweet: # If tweets need to be read
-                                    l_list = line.split(self.delimit)
-                                    added = False
-                                    ignored = False
-                                    is_rt = False
-                                    if rt_ignore and len(l_list[rt_incol]) > 0:
-                                        i_rt_total = i_rt_total + 1
-                                        is_rt = True
-                                        ignored = True # Ignore RTs
-                                    if geo_only and len(l_list[geo_incol]) < 1:
-                                        ignored = True # Ignore non-Geocoded
-
-                                    if len(kw_redux)>0:
-                                        kw_is_rt = False
-                                        for kw in kw_redux:
-                                            # Remember to search text and quoted text!
-                                            text = l_list[kw_incol]+' '+l_list[quote_incol]
-                                            text = parselogic.reformat(text, mode=4.5, lcase=True)
-                                            #if kw in text.lower() and not added and not ignored:
-                                            if parselogic.match(kw, text):
-                                                if not added and not ignored:
-                                                    datadict.setdefault(fn, []).append(line)
-                                                    datalines.append(line)
-                                                    added = True
-                                                    i_kw = i_kw + 1
-                                                elif is_rt:
-                                                    kw_is_rt = True
-                                        if kw_is_rt:
-                                            i_kw = i_kw + 1
-                                            i_rt_kw = i_rt_kw + 1
-                                    else:
-                                        if not added and not ignored:
-                                            datadict.setdefault(fn, []).append(line)
-                                            datalines.append(line)
-                                            added = True
-                                else: # Fast and simple
-                                    datadict.setdefault(fn, []).append(line)
-                                    datalines.append(line)
-                            i_line = i_line + 1 #Counting all read lines per file
-                        i_total = i_total + i_line - 1 #Total data lines (-1 for header line)
+                                        if len(kw_redux)>0:
+                                            kw_is_rt = False
+                                            for kw in kw_redux:
+                                                # Remember to search text and quoted text!
+                                                text = l_list[kw_incol]+' '+l_list[quote_incol]
+                                                text = parselogic.reformat(text, emojis=None, mode=4.5, lcase=True)
+                                                #if kw in text.lower() and not added and not ignored:
+                                                if parselogic.match(kw, text):
+                                                    if not added and not ignored:
+                                                        datadict.setdefault(fn, []).append(line)
+                                                        datalines.append(line)
+                                                        added = True
+                                                        i_kw = i_kw + 1
+                                                    elif is_rt:
+                                                        kw_is_rt = True
+                                            if kw_is_rt:
+                                                i_kw = i_kw + 1
+                                                i_rt_kw = i_rt_kw + 1
+                                        else:
+                                            if not added and not ignored:
+                                                datadict.setdefault(fn, []).append(line)
+                                                datalines.append(line)
+                                                added = True
+                                    else: # Fast and simple
+                                        datadict.setdefault(fn, []).append(line)
+                                        datalines.append(line)
+                                i_line = i_line + 1 #Counting all read lines per file
+                            i_total = i_total + i_line - 1 #Total data lines (-1 for header line)
 
             self.head = head
             self.datadict = datadict
@@ -198,7 +198,7 @@ class subsample(object):
             for line in data:
                 # Get tweet text:
                 text = line.lower().split(self.delimit)[kw_incol]
-                text = re.sub('\\',' ', text) # <-- Is this necessary?
+                #text = re.sub('\\',' ', text) # Unclear what this was supposed to accomplish
                 # Get unique hashtags from within tweet text:
                 hashtags = list(set(part[1:] for part in text.split() if part.startswith('#')))
                 # Remove empty entry, if present
@@ -335,11 +335,9 @@ class subsample(object):
         return self.returns
             
 
-halt = False
-### Keyword arguments and default specifications
+#if __name__ == '__main__':
 
-data_dir = '../data/parser_out/'
-outfile = 'reduced/reduced.csv'
+# Default variables
 reduce = 0.01
 stratify = False
 hashspear = False
@@ -347,68 +345,77 @@ hash_n = 20
 spear = 0.90
 iterate = 100
 kws = False
-kw_redux = []
-rt_ignore = True
+halt = False
 
 
-if len(sys.argv) > 1: # If command line arguments were passed
-    print(sys.argv)
-    i = 0
-    try:
-        for arg in sys.argv:
-            if arg.lower() in ['-i','-input','-indir','-dir']: # '-i' indicates input directory (req. 1 argument)
-                data_dir = sys.argv[i+1]
-            if arg.lower() in ['-o','-out','-outfile']: # '-o' indicates outfile (req. 1 argument)
-                outfile = sys.argv[i+1]
-            if arg.lower() in ['-r','-redux','-reduce']: # '-r' indicates reduction approach 
-                reduce = float(sys.argv[i+1])
-            if arg.lower() in ['-s','-strat','-stratify']: # '-s' indicates stratification 
-                stratify = True
-            if arg.lower() in ['-h','-hash','-hashspear']: # '-h' indicates hashspear (req. 1 argument)
-                stratify = False
-                hashspear = True
-                hash_n = int(sys.argv[i+1])
-                spear = float(sys.argv[i+2])
-                iterate = int(sys.argv[i+3])
-            if arg.lower() in ['-d','-date','-dates']: # '-d' indicates start/end dates (req. 2 MMDDYYYY objects)
-                start = int(sys.argv[i+1])
-                end = int(sys.argv[i+2])
-            if arg.lower() in ['-k','-kw','-kws', '-keywords']: # '-k' limit to keywords (req. 1 argument for keyword file)
-                kws = True
-                kw_file = sys.argv[i+1]
-            if arg.lower() in ['-rt','-rts']: # '-rt' includes RTs
-                rt_ignore = False
-            i = i+1
-    except:
-        print ('ERROR: Command line arguments failed to parse.')
-        halt = True
+# Get variable defaults and command line arguments
+cv = parselogic.cmdvars()
+start = cv['start']
+end = cv['end']
+dir_in = cv['dir_in']
+dir_in_kws = cv['dir_in_kws']
+f_kws = cv['f_kws']
+dir_out = cv['dir_out']
+f_stem = cv['f_stem']
+f_ext = cv['f_ext']
+delimiter = cv['delimiter']
+rt_ignore = cv['rt_ignore']
+rt_status = cv['rt_status']
 
-if kws:
-    try:
-        with open(data_dir+kw_file, 'r') as kf:
-            for k in kf:
-                if k.strip() not in ['','#']:
-                    kw_redux.append(k.strip())
-    except:
-        print('ERROR: Keyword list failed to load.')
-        halt = True
+# Get keywords
+if cv['f_kws'] or cv['dir_in_kws']:
+    kws = True
+    keywords = parselogic.kwslist(dir_in_kws, f_kws)
+
+
+# Other command line arguments
+i = 0
+try:
+    for arg in sys.argv:
+        if arg.lower() in ['-r','-redux','-reduce']: # '-r' indicates reduction approach 
+            reduce = float(sys.argv[i+1])
+        if arg.lower() in ['-s','-strat','-stratify']: # '-s' indicates stratification 
+            stratify = True
+        if arg.lower() in ['-h','-hash','-hashspear']: # '-h' indicates hashspear (req. 1 argument)
+            stratify = False
+            hashspear = True
+            hash_n = int(sys.argv[i+1])
+            spear = float(sys.argv[i+2])
+            iterate = int(sys.argv[i+3])
+        i = i+1
+
+except:
+    print ('ERROR: Command line arguments failed to parse.')
+    halt = True
+
+
+# For compatibility with cmdvars
+data_dir = dir_in
+kw_redux = keywords
+
 
 if not halt:
-    redux1 = subsample(data_dir, kw_redux=kw_redux, rt_ignore=rt_ignore)
+    redux1 = subsample(dir_in, kw_redux=kw_redux, start=start, end=end, rt_ignore=rt_ignore)
     head = redux1.head
+    if reduce >= 1: r = int(reduce)
+    else: r = reduce
     if hashspear:
+        out_spec = '_hash'+str(r)+'_h'+str(hash_n)+'_s'+str(spear)+'_i'+str(iterate)+'_'
         redux2 = redux1.hashspear(reduce=reduce, hash_n=hash_n, spear=spear, iterate=iterate)
     elif stratify:
+        out_spec = '_strat'+str(r)+'_'
         redux2 = redux1.strat(reduce=reduce)
     else:
+        out_spec = '_rand'+str(r)+'_'
         redux2 = redux1.rand(reduce=reduce)
-        
 
-#head = 'userID,username,utc off,profile created,favorites,followers,following,tweets,tweetID,retweetID,retweet user,retweet count,extended,text,date,day,year,month,day,hour,min,sec,url,lat,lon\n'
-
-with open(data_dir+outfile, 'a+') as outfile:
-    outfile.write(head)
-    #for line in y['data']: #This might be needed for one of the approaches?
-    for line in redux2:
-        outfile.write(line)
+    outfile = 'sub'+out_spec+f_ext
+            
+    #head = 'userID,username,utc off,profile created,favorites,followers,following,tweets,tweetID,retweetID,retweet user,retweet count,extended,text,date,day,year,month,day,hour,min,sec,url,lat,lon\n'
+    
+    with open(dir_out+f_stem+outfile, 'w+') as ofile:
+        ofile.write(head)
+    with open(dir_out+f_stem+outfile, 'a+') as ofile:
+        for line in redux2:
+            ofile.write(line)
 

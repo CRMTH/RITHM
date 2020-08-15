@@ -350,7 +350,7 @@ modes = {'tsv':'1.0',
 #   "ht_include" argument is optional. Includes hashtags w/ basic keywords. 
 #   "emoji" argument contains the emoji dict. Will be empty if filepath invalid. 
 ###
-def reformat(text, emojis, mode=1.0, modes=modes, 
+def reformat(text, emojis=None, mode=1.0, modes=modes, 
              lcase=False, ht_include=True):
     
     # It's faster to use numbers instead of dictionary matching of text!
