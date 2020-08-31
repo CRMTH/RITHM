@@ -110,11 +110,31 @@ def cmdvars(args=sys.argv):
 
             i+=1
 
-        if d['dir_in_kws'] is None:
-            d['dir_in_kws'] = d['dir_in']
+
         if d['dir_out'] is None:
             d['dir_out'] = d['dir_in']
-            
+        elif d['dir_out'][0:2] == './':
+            dir_out = d['dir_in']+d['dir_out'][2:]
+            d['dir_out'] = dir_out
+        elif d['dir_out'][0:3] == '../':
+            dir_back = ('/').join(d['dir_in'].split('/')[:-2]+[''])
+            dir_out = dir_back+d['dir_out'][3:]
+            d['dir_out'] = dir_out
+        if make_dir:
+            mkdir(d['dir_out'])
+
+
+        if d['dir_in_kws'] is None:
+            d['dir_in_kws'] = d['dir_in']
+        elif d['dir_in_kws'][0:2] == './':
+            dir_in_kws = d['dir_in']+d['dir_in_kws'][2:]
+            d['dir_in_kws'] = dir_in_kws
+        elif d['dir_in_kws'][0:3] == '../':
+            dir_back = ('/').join(d['dir_in'].split('/')[:-2]+[''])
+            dir_in_kws = dir_back+d['dir_in_kws'][3:]
+            d['dir_in_kws'] = dir_in_kws
+
+
         if d['f_kws'] is not None:
             if d['f_kws'][0:2] == './':
                 f_kws = d['f_kws'][2:]
@@ -128,17 +148,6 @@ def cmdvars(args=sys.argv):
             elif '/' in d['f_kws']:
                 d['dir_in_kws'] = ''
 
-
-        if d['dir_out'][0:2] == './':
-            dir_out = d['dir_in']+d['dir_out'][2:]
-            d['dir_out'] = dir_out
-        elif d['dir_out'][0:3] == '../':
-            dir_back = ('/').join(d['dir_in'].split('/')[:-2]+[''])
-            dir_out = dir_back+d['dir_out'][3:]
-            d['dir_out'] = dir_out
-        if make_dir:
-            mkdir(d['dir_out'])
-            
 
     return d
 """
@@ -213,6 +222,7 @@ def filelist(dir_in, f_ext='.tsv', tsv_type='raw', start=None, end=None, silent=
 def kwslist(dir_in_kws, f_kws=None, f_ext='.kws', silent=False):
     kws_list = []
     if f_kws:
+        if not silent: print('\n----- using '+f_kws)
         with open(dir_in_kws+f_kws, 'r') as kf:
             for l in kf: #for line in file
                 if len(l.strip())>0 and l[0] != '#':
