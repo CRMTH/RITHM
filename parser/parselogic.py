@@ -180,7 +180,7 @@ This is here for easy copy/paste - not all values are used by all scripts.
 #       "raw" handles tsv files as daily tweet files ("start" and "end" req.)
 #
 ###
-def filelist(dir_in, f_ext='.tsv', tsv_type='raw', start=None, end=None, silent=False, quiet=True):
+def filelist(dir_in, f_ext='.tsv', tsv_type='raw', start=0, end=99999999, silent=False, quiet=True):
     if silent == True: quiet = True
     files_list = []
     files_all = os.listdir(dir_in)
