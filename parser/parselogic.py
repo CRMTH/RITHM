@@ -9,6 +9,75 @@ Created on 2018-05-29
 """
 import os, datetime, re, sys
 
+
+### t_col function
+#
+# Returns column number (i.e., list position) if valid variable name is passed. 
+# Returns variable name if integer is passed. This is useful for quickly 
+# locating and converting between variable names and list positions.
+#
+###
+def t_col(tc_in):
+    col_dict = {
+        'u_id': 0,
+        'u_handle': 1,
+        'u_name': 2,
+        'u_desc': 3,
+        'u_url': 4,
+        'u_create': 5,
+        'u_tweets': 6,
+        'u_fo_out': 7,
+        'u_fo_in': 8,
+        'u_likes': 9,
+        'u_utcoff': 10,
+        'u_locate': 11,
+        'u_geotag': 12,
+        'u_lang': 13,
+        'u_imgurl': 14,
+        'u_bgurl': 15,
+        'u_privat': 16,
+        'u_verify': 17,
+        'u_n_capt': 18,
+        't_id': 19,
+        't_text': 20,
+        't_quote': 21,
+        't_url': 22,
+        't_date': 23,
+        't_geopoint': 24,
+        't_geopoly': 25,
+        't_place': 26,
+        't_lang': 27,
+        're_t_id': 28,
+        're_u_id': 29,
+        'qu_t_id': 30,
+        'qu_u_id': 31,
+        'qu_n_qu': 32,
+        'qu_n_re': 33,
+        'qu_n_rt': 34,
+        'qu_n_fav': 35,
+        'rt_t_id': 36,
+        'rt_u_id': 37,
+        'rt_n_qu': 38,
+        'rt_n_re': 39,
+        'rt_n_rt': 40,
+        'rt_n_fav': 41,
+        'u_profile': 42,
+        'u_profile_img': 43,
+        'u_list': 44,
+        't_hashtags': 45,
+        't_urls': 46,
+        't_mentions': 47,
+        't_media': 48
+        }
+    if isinstance(tc_in,int):
+        for k, v in col_dict.items():
+            if v == tc_in:
+                return k
+    else:
+        return col_dict[tc_in]
+
+
+
 ### cmdvars function
 #
 # Set default variables and look for additional command line input. 
@@ -176,8 +245,12 @@ This is here for easy copy/paste - not all values are used by all scripts.
 #
 # Returns a list of files matching certain criteria within a given directory. 
 #    
-#    "tsv_type" settings: 
-#       "raw" handles tsv files as daily tweet files ("start" and "end" req.)
+#    "f_ext" parameter: 
+#       What is the file extension to search for? If not TSV or CSV, all 
+#       matching files will be included by default.
+#    
+#    "tsv_type" parameter: 
+#       "raw" handles daily tweet files (must begin as YYYYMMDD format)
 #
 ###
 def filelist(dir_in, f_ext='.tsv', tsv_type='raw', start=0, end=99999999, silent=False, quiet=True):
