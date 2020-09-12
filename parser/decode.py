@@ -444,7 +444,7 @@ class decoder:
 
         
         ### Might want to update to csv.writer dependency? 
-        with open(outfile, 'a') as csvfile:      
+        with open(outfile, 'a', encoding='utf-8') as csvfile:      
             saveFile = csv.writer(csvfile, delimiter='\t', lineterminator='\n')        
             if count == 0:
 
