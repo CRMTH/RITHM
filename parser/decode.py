@@ -107,7 +107,7 @@ class decoder:
                                 else:
                                     self.today_dict[tweetid] = 1
                                     decoder.writeToCSV(self, dic, parsed_text, parsed_quote, fileName, count)
-                                count += 1
+                                    count += 1
                                 #if j[1] == 'done':
                                 #    f.close()
                                 #    print('DONE\n')
@@ -169,7 +169,7 @@ class decoder:
                             else:
                                 self.today_dict[tweetid] = 1
                                 decoder.writeToCSV(self, data, parsed_text, parsed_quote, fileName, count)
-                            count += 1
+                                count += 1
                     
                 except: 
                     traceback.print_exc()

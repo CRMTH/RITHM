@@ -92,6 +92,7 @@ def cmdvars(args=sys.argv):
     # Default directory values
     d['dir_in'] = './data/'
     d['dir_in_kws'] = None
+    d['dir_in_uid'] = None
     d['dir_out'] = None
 
     # Default file extension and delimiter
@@ -102,6 +103,7 @@ def cmdvars(args=sys.argv):
     d['f1'] = None
     d['f2'] = None
     d['f_kws'] = None
+    d['f_uid'] = None
     d['f_stem'] = ''
 
     # Default datestamps in filename-type format (int; YYYYMMDD)
@@ -171,6 +173,15 @@ def cmdvars(args=sys.argv):
             if arg.lower() in ['-filekws','-filekw','-kwsfile','-kwfile','-kwf']:
                 d['f_kws'] = str(args[i+1])
 
+            # '-uidir' indicates input directory for UID files (MUST include trailing slash)
+            if arg.lower() in ['-diruid','-dirui','-uiddir','-uidir','-uidd','-uid','-duid','-dui']:
+                d['dir_in_uid'] = str(args[i+1])
+
+            # '-uifile' indicates specific UID file
+            # directory paths here override '-kwdir', and are relative to '-dir'
+            if arg.lower() in ['-fileuid','-fileui','-uidfile','-uifile','-uidf','-uif','-fuid','-fui']:
+                d['f_uid'] = str(args[i+1])
+
             # '-rt' indicates that RTs should be included
             if arg.lower() in ['-rt', '-rts']:
                 d['rt_include'] = True
@@ -218,6 +229,31 @@ def cmdvars(args=sys.argv):
                 d['dir_in_kws'] = ''
 
 
+        if d['dir_in_uid'] is None:
+            d['dir_in_uid'] = d['dir_in']
+        elif d['dir_in_uid'][0:2] == './':
+            dir_in_uid = d['dir_in']+d['dir_in_uid'][2:]
+            d['dir_in_uid'] = dir_in_uid
+        elif d['dir_in_uid'][0:3] == '../':
+            dir_back = ('/').join(d['dir_in'].split('/')[:-2]+[''])
+            dir_in_uid = dir_back+d['dir_in_uid'][3:]
+            d['dir_in_uid'] = dir_in_uid
+
+
+        if d['f_uid'] is not None:
+            if d['f_uid'][0:2] == './':
+                f_uid = d['f_uid'][2:]
+                d['dir_in_uid'] = d['dir_in']
+                d['f_uid'] = f_kws
+            elif d['f_uid'][0:3] == '../':
+                d['dir_in_uid'] = ''
+                dir_back = ('/').join(d['dir_in'].split('/')[:-2]+[''])
+                f_uid = dir_back+d['f_uid'][3:]
+                d['f_uid'] = f_uid
+            elif '/' in d['f_uid']:
+                d['dir_in_uid'] = ''
+
+
     return d
 """
 Here's example syntax for using cmdvars function in other RITHM scripts.
@@ -228,15 +264,18 @@ This is here for easy copy/paste - not all values are used by all scripts.
     end = cv['end']
     dir_in = cv['dir_in']
     dir_in_kws = cv['dir_in_kws']
+    dir_in_uid = cv['dir_in_uid']
     dir_out = cv['dir_out']
     f1 = cv['f1']
     f2 = cv['f2']
     f_kws = cv['f_kws']
+    f_uid = cv['f_uid']
     f_ext = cv['f_ext']
     delimiter = cv['delimiter']
     rt_include = cv['rt_include']
     rt_ignore = cv['rt_ignore']
     rt_status = cv['rt_status']
+    f_stem = cv['f_stem']
 
 """
 
@@ -312,8 +351,38 @@ def kwslist(dir_in_kws, f_kws=None, f_ext='.kws', silent=False):
     if not silent:
         print('\nKeyword filters:')
         print(sorted(list(set(kws_list))))
-        print('')
     return sorted(list(set(kws_list)))
+
+
+### uidlist function
+#
+# Returns de-duplicated list of keywords from ALL .kws type files in a dir. 
+#   Each line is treated as a separate keyword string. 
+#   Blank lines and hashed-out lines are ignored. 
+#
+###
+def uidlist(dir_in_uid, f_uid=None, f_ext='.uid', silent=False):
+    uid_list = []
+    if f_uid:
+        if not silent: print('\n----- using '+f_uid)
+        with open(dir_in_uid+f_uid, 'r') as uf:
+            for l in uf: #for line in file
+                if len(l.strip())>0 and l[0] != '#':
+                    uid_list.append(l.strip())
+    else:
+        uid_files = filelist(dir_in_uid, f_ext=f_ext, silent=silent)
+        for f in uid_files:
+            with open(dir_in_uid+f, 'r') as uf:
+                for l in uf: #for line in file
+                    if len(l.strip())>0 and l[0] != '#':
+                        uid_list.append(l.strip())
+                    else:
+                        pass
+    if not silent:
+        print('\nUser ID filters:')
+        print(len(list(set(uid_list))), 'users')
+    return sorted(list(set(uid_list)))
+
 
 
 ### mkdir function
@@ -370,6 +439,34 @@ def mkdir(dirs, base='', silent=False):
 def emojify(text, emojis):
     if '\\u' in text.lower():
         text = text.replace('\\U' , '\\u')
+        text = text.replace('\\' , ' \\')
+        words = text.split(' ')
+
+        for word in words:
+            if '\\u' in word:
+                word = word.strip()
+                if word in emojis.keys():
+                    words[words.index(word)] = emojis[word].strip()
+                elif word[0:10] in emojis:
+                    word_1 = word[10:len(word)]
+                    words[words.index(word)] = emojis[word[0:10]].strip() + ' ' + word_1
+                elif word[0:6] in emojis:
+                    word_1 = word[6:len(word)]
+                    words[words.index(word)] = emojis[word[0:6]].strip() + ' ' + word_1
+                elif word[0:4] in emojis:
+                    word_1 = word[4:len(word)]
+                    words[words.index(word)] = emojis[word[0:4]].strip() + ' ' + word_1
+        text = ' '.join(words)
+        while '  ' in text:
+            text = text.replace('  ',' ')
+        return text
+    return text
+                    
+"""
+# This older version was replaced on 2020-09-21
+def emojify(text, emojis):
+    if '\\u' in text.lower():
+        text = text.replace('\\U' , '\\u')
         text = text.replace('\\u' , ' \\u')
         words = text.split(' ')
 
@@ -390,20 +487,7 @@ def emojify(text, emojis):
 
         return ' '.join(words)
     return text
-                    
-                    
-"""
-                #This is an old approach. May have additional processing overhaed
-                else:
-                    stem = ''
-                    i_char = 0
-                    done = False
-                    for char in word:
-                        stem += char
-                        i_char += 1
-                        if stem in emojis.keys():
-                            words[words.index(word)] = emojis[stem]+' '+word[i_char:]
-                            break
+
 """
 
 
