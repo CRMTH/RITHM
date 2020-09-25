@@ -24,27 +24,40 @@ class subsample(object):
                  header=True, combine=True,
                  kw_redux=[], kw_incol=20, quote_incol=21, 
                  rt_ignore=True, rt_incol=36, 
-                 geo_only=False, geo_incol=12):  
+                 geo_only=False, geo_incol=12,
+                 uid_redux=[], uid_incol=0):  
         self.data = data
         self.kw_incol = kw_incol
+        self.uid_incol = uid_incol
         self.returns = {}                    
         self.delimit = '\t'
 
-        if len(kw_redux) > 0 or rt_ignore or geo_only: 
-            read_tweet=True
-        else: 
-            read_tweet=False
 
         # If no data was passed, then read-in data 
         if not data:
             datadict = {}
             datalines = []
-    
+
+            read_tweet = False    
             i_total = 0
             i_rt_total = 0
             i_kw = 0
             i_rt_kw = 0
-
+            i_uid = 0
+            i_rt_uid = 0
+            
+            if len(kw_redux) > 0:
+                read_tweet=True
+                match_kw = True
+            
+            if len(uid_redux) > 0:
+                read_tweet=True
+                match_uid = True
+            
+            if rt_ignore or geo_only:
+                read_tweet=True
+                
+            
             for fn in datafiles:
                 i_line = 0
                 with open(dir_in+fn, 'r') as infile:
@@ -57,59 +70,91 @@ class subsample(object):
                                 added = False
                                 ignored = False
                                 is_rt = False
-                                if rt_ignore and len(l_list[rt_incol]) > 0:
+                                matched_kw = False
+                                matched_uid = False
+
+                                if len(l_list[rt_incol]) > 0:
                                     i_rt_total = i_rt_total + 1
                                     is_rt = True
-                                    ignored = True # Ignore RTs
+                                    if rt_ignore:
+                                        ignored = True # Ignore RTs
+                                
                                 if geo_only and len(l_list[geo_incol]) < 1:
                                     ignored = True # Ignore non-Geocoded
-    
-                                if len(kw_redux)>0:
+                                
+                                if match_kw:
+                                    text = ' '+l_list[kw_incol]+' '+l_list[quote_incol]+' '
+                                    text = parselogic.reformat(text, emojis=None, mode=4.5, lcase=True)
                                     kw_is_rt = False
                                     for kw in kw_redux:
-                                        # Remember to search text and quoted text!
-                                        text = l_list[kw_incol]+' '+l_list[quote_incol]
-                                        text = parselogic.reformat(text, emojis=None, mode=4.5, lcase=True)
-                                        #if kw in text.lower() and not added and not ignored:
                                         if parselogic.match(kw, text):
-                                            if not added and not ignored:
-                                                datadict.setdefault(fn, []).append(line)
-                                                datalines.append(line)
-                                                added = True
-                                                i_kw = i_kw + 1
-                                            elif is_rt:
+                                            matched_kw = True
+                                            i_kw += 1
+                                            if is_rt:
                                                 kw_is_rt = True
-                                    if kw_is_rt:
-                                        i_kw = i_kw + 1
-                                        i_rt_kw = i_rt_kw + 1
-                                else:
-                                    if not added and not ignored:
-                                        datadict.setdefault(fn, []).append(line)
-                                        datalines.append(line)
-                                        added = True
-                            else: # Fast and simple
+                                                i_rt_kw += 1
+                                            break
+                                    if not matched_kw:
+                                        ignored = True
+                                
+                                if match_uid and not ignored:
+                                    if l_list[uid_incol] in uid_redux:
+                                        matched_uid = True
+                                        i_uid += 1
+                                        if is_rt:
+                                            uid_is_rt = True
+                                            i_rt_uid += 1
+                                    else:
+                                        ignored = True
+                                        
+                                    #for uid in uid_redux:
+                                    #    if l_list[uid_incol] == uid:
+                                    #        matched_uid = True
+                                    #        i_uid += 1
+                                    #        if is_rt:
+                                    #            uid_is_rt = True
+                                    #            i_rt_uid += 1
+                                    #        break
+                                    #if not matched_uid:
+                                    #    ignored = True
+                                
+                                if not ignored:
+                                    datadict.setdefault(fn, []).append(line)
+                                    datalines.append(line)
+                            
+                            else: # Nothing to check
                                 datadict.setdefault(fn, []).append(line)
                                 datalines.append(line)
-                        i_line = i_line + 1 #Counting all read lines per file
+                        i_line += 1 #Counting all read lines per file
                     i_total = i_total + i_line - 1 #Total data lines (-1 for header line)
-
+            
             self.head = head
             self.datadict = datadict
             self.data = datalines
             print('\n----- FILE TOTALS:')
-            print('Tweets observed:   '+str(i_total))
-            print('Retweets observed: '+str(i_rt_total))
-            print('Original tweets:   '+str(i_total-i_rt_total))
+            print('All Tweets+RTs:       '+str(i_total))
+            print('Retweets:             '+str(i_rt_total))
+            print('Original Tweets:      '+str(i_total-i_rt_total))
             
-            if len(kw_redux)>0:
-                print('\n----- KEYWORD-MATCHED:')
-                print('Tweets observed:   '+str(i_kw))
-                print('Retweets observed: '+str(i_rt_kw))
-                print('Original tweets:   '+str(i_kw-i_rt_kw))
-    
-            if rt_ignore: print('\nIGNORING RETWEETS...\n')
-    
-            print('Tweets in sample:  '+str(len(datalines)))
+            if match_kw:
+                print('\n----- KEYWORD MATCHED:')
+                print('All Tweets+RTs:      ',i_kw)
+                print('Retweets:            ',i_rt_kw)
+                print('Original Tweets:     ',i_kw-i_rt_kw)
+            if match_uid:
+                if match_kw:
+                    print('\n----- USER_ID MATCHED: (w/in keyword matched)')
+                else:
+                    print('\n----- USER_ID MATCHED:')
+                if rt_ignore:
+                    print('Retweets ignored')
+                else:
+                    print('All Tweets+RTs:      ',i_uid)
+                    print('Retweets:            ',i_rt_uid)
+                print('Original Tweets:     ',i_uid-i_rt_uid)
+            
+            
+            print('\nTweets in sample:    ',len(datalines))
 
 
 
@@ -122,8 +167,8 @@ class subsample(object):
 
         import random
 
-        print('Tweets available:  '+str(len(data)))
-        print('Reduction value:   '+str(reduce))
+        print('\nTweets available:    ',len(data))
+        print('Reduction value:     ',reduce)
 
         try:
             reduce = float(reduce)
@@ -139,7 +184,7 @@ class subsample(object):
                 if reduce > len(data):
                     reduce = len(data)
                 data = random.sample(data, int(reduce))
-            print('Tweets retained:   '+str(len(data)))
+            print('Tweets retained:     ',len(data))
             return data
         except: 
             raise ValueError('Reduce argument must be numeric.')
@@ -335,6 +380,8 @@ if __name__ == '__main__':
     spear = 0.90
     iterate = 100
     halt = False
+    keywords = []
+    uids = []
     
     
     # Unique command line arguments
@@ -379,10 +426,16 @@ if __name__ == '__main__':
         delimiter = cv['delimiter']
         rt_ignore = cv['rt_ignore']
         rt_status = cv['rt_status']
+        dir_in_uid = cv['dir_in_uid']
+        f_uid = cv['f_uid']
         
         # Get keywords
         if cv['f_kws'] or cv['dir_in_kws']:
             keywords = parselogic.kwslist(dir_in_kws, f_kws)
+
+        # Get UIDs
+        if cv['f_uid'] or cv['dir_in_uid']:
+            uids = parselogic.uidlist(dir_in_uid, f_uid)
     
         # Get data files
         if stratify:
@@ -390,21 +443,36 @@ if __name__ == '__main__':
         else:
             datafiles = parselogic.filelist(dir_in, start=start, end=end)
 
+        print('\n----- PROCESSING...\n')
+        
+        if len(keywords) == 0 and len(uids) > 0:
+            print('NOTE: Using UID filtering without KWS filters.\n')
+    
+        if len(uids) > 0 and rt_ignore:
+            print('NOTE: Using UID filtering and also ignoring RTs.',
+                  '\n      This may not be desirable if using data for SNA.',
+                  '\n      Don\'t forget to specify "-rt" argument if necessary.\n')
+        elif rt_ignore: 
+            print('\nNOTE: Retweets are being ignored.\n')
+
+
+
+
+
 
     if not halt:
-        #redux1 = subsample(dir_in, kw_redux=kw_redux, start=start, end=end, rt_ignore=rt_ignore)
-        redux1 = subsample(dir_in=dir_in, datafiles=datafiles, kw_redux=keywords, rt_ignore=rt_ignore)
+        redux1 = subsample(dir_in=dir_in, datafiles=datafiles, kw_redux=keywords, uid_redux=uids, rt_ignore=rt_ignore)
         head = redux1.head
-        if reduce >= 1: r = int(reduce)
+        if reduce >= 0: r = int(reduce)
         else: r = reduce
         if hashspear:
-            out_spec = '_hash'+str(r)+'_h'+str(hash_n)+'_s'+str(spear)+'_i'+str(iterate)+'_'
+            out_spec = '_hash'+str(r)+'_h'+str(hash_n)+'_s'+str(spear)+'_i'+str(iterate)
             redux2 = redux1.hashspear(reduce=reduce, hash_n=hash_n, spear=spear, iterate=iterate)
         elif stratify:
-            out_spec = '_strat'+str(r)+'_'
+            out_spec = '_strat'+str(r)
             redux2 = redux1.strat(reduce=reduce)
         else:
-            out_spec = '_rand'+str(r)+'_'
+            out_spec = '_rand'+str(r)
             redux2 = redux1.rand(reduce=reduce)
     
         outfile = 'sub'+out_spec+f_ext

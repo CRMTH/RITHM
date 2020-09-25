@@ -733,6 +733,105 @@ def match(test, text):
     return ParentMatch(test, text)
 
 
+### dt_format function
+# 
+# This converts between several datetime formats
+#
+###
+def dt_format(date_in=None, date_type='detect',output='standard',incl_time=True):
+    date_out = None
+    if date_in is None:
+        date_in = str(datetime.datetime.today().strftime('%Y%m%d%H%M%S'))
+        date_type = 'yyyymmddhhmmss'
+    
+    if date_type == 'detect':
+        if type(date_in) is int:
+            date_in = str(date_in)
+
+        if type(date_in) is datetime.datetime:
+            date_type = 'datetime'
+            #output = 'human'
+        elif '-' in date_in: 
+            date_type = 'human'
+        elif len(date_in) == 8: 
+            date_type = 'yyyymmdd'
+            incl_time = False
+        elif len(date_in) == 14:
+            date_type = 'yyyymmddhhmmss'
+        else: 
+            date_type = 'twitter'
+
+    try:
+        if date_type in ['human','standard']:
+            dt = date_in.split(' ')
+            dl = dt[0].split('-')
+            year = int(dl[0])
+            month = int(dl[1])
+            day = int(dl[2])
+            tl = dt[1].split(':')
+            hour = int(tl[0])
+            minute = int(tl[1])
+            second = int(tl[2])
+    
+        if date_type in ['filedate','yyyymmdd','yyyymmddhhmmss']:
+            d = date_in
+            year = int(d[0:4])
+            month = int(d[4:6])
+            day = int(d[6:8])
+    
+        if date_type == 'yyyymmddhhmmss':
+            hour = int(d[8:10])
+            minute = int(d[10:12])
+            second = int(d[12:14])
+    
+        if date_type in ['twitter']:
+            months={'Jan':'01','Feb':'02','Mar':'03','Apr':'04',
+                    'May':'05','Jun':'06','Jul':'07','Aug':'08',
+                    'Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
+            dl = date_in.split(' ')
+            year = int(dl[-1])
+            month = int(months[dl[1]])
+            day = int(dl[2])
+            tl = dl[3].split(':')
+            hour = int(tl[0])
+            minute = int(tl[1])
+            second = int(tl[2])
+    
+        if date_type in ['datetime']:
+            year = date_in.year
+            month = date_in.month
+            day = date_in.day
+            hour = date_in.hour
+            minute = date_in.minute
+            second = date_in.second
+    
+        if incl_time:
+            date_out = datetime.datetime(year, month, day, hour, minute, second)
+        else:
+            date_out = datetime.datetime(year, month, day)
+    
+        if output in ['human', 'standard']:
+            if incl_time:
+                date_out = str(date_out.strftime('%Y-%m-%d %H:%M:%S'))
+            else: 
+                date_out = str(date_out.strftime('%Y-%m-%d'))
+        elif output in ['filedate', 'yyyymmdd']:
+            date_out = str(date_out.strftime('%Y%m%d'))
+        elif output  == 'yyyymmddhhmmss':
+            date_out = str(date_out.strftime('%Y%m%d'))
+
+    except:
+        print('\nThe dt_format function failed to parse datetime as input type:',date_type)
+        print('Input data was: ',date_in)
+        print('  Converting to:',output)
+        print('Output data was:',date_out,'\n')
+
+    return date_out
+
+
+
+
+
 ###############################################################################
 
 
@@ -745,16 +844,18 @@ def match(test, text):
 
 ### ts function 
 #
-# TO BE DEPRECATED AND REPLACED (there is a better version underway)
-#
-# Output a timestamp string in "YYYYMMDDhhmmss" format. 
-#
-#    ts() = current date/time.
-#    
-#    "stamp" argument takes a Twitter-formatted timestamp and converts it.
+# DEPRECATED (use newer dt_format function)
 #
 ###
 def ts(stamp=None, reform=None):
+    if reform is False:
+        output = 'yyyymmddhhmmss'
+    else:
+        output = 'standard'
+    date_out = dt_format(date_in=stamp, date_type='detect',output=output,incl_time=True) 
+    return date_out
+
+""" This was removed and replaced with dt_format function for reverse compatibility: 
     fail = False
     if stamp is None:
         timestamp = str(datetime.datetime.today().strftime('%Y%m%d%H%M%S'))
@@ -779,7 +880,7 @@ def ts(stamp=None, reform=None):
         t = ':'.join([r[8:10],r[10:12],r[12:14]])
         r = d+' '+t
     return r
-
+"""
 
 
 ### locmatch function
