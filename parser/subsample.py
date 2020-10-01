@@ -6,31 +6,27 @@ Created on Fri Aug  4 19:11:08 2017
 A command line tool for sub-sampling parsed RITHM data.
 
 """
-import sys
+import sys, re
 import parselogic
 
-
+###
+# The "subsample" class is used to systematically subsample RITHM output
+# as TSV files from a defined system directory.
+###
 class subsample(object):
-    """
-    The "subsample" class is used to systematically subsample RITHM output
-    as TSV files from a defined system directory.
-    
-    . 
-    """
-    ##### If column numbers change, "*_incol" vars need updating - this dependency 
-    ##### should be fixed so that the process is aware of standard variable names
-    ##### and calculates column numbers accordingly. 
-    def __init__(self, data=None, dir_in='', datafiles=[],
-                 header=True, combine=True,
-                 kw_redux=[], kw_incol=20, quote_incol=21, 
-                 rt_ignore=True, rt_incol=36, 
-                 geo_only=False, geo_incol=12,
-                 uid_redux=[], uid_incol=0):  
+    def __init__(self, data=None, head=None, dir_in='', datafiles=[],
+                 header=True, rt_ignore=True, geo_only=False,
+                 kw_redux=[], uid_redux=[], val_redux=[]):
         self.data = data
-        self.kw_incol = kw_incol
-        self.uid_incol = uid_incol
         self.returns = {}                    
         self.delimit = '\t'
+
+        cols = parselogic.t_col()
+        self.col = cols
+
+        match_kw = False
+        match_uid = False
+        match_val = False
 
 
         # If no data was passed, then read-in data 
@@ -45,6 +41,8 @@ class subsample(object):
             i_rt_kw = 0
             i_uid = 0
             i_rt_uid = 0
+            i_val = 0
+            i_rt_val = 0
             
             if len(kw_redux) > 0:
                 read_tweet=True
@@ -53,7 +51,11 @@ class subsample(object):
             if len(uid_redux) > 0:
                 read_tweet=True
                 match_uid = True
-            
+
+            if len(val_redux) > 0:
+                read_tweet=True
+                match_val = True
+
             if rt_ignore or geo_only:
                 read_tweet=True
                 
@@ -64,6 +66,8 @@ class subsample(object):
                     for line in infile.readlines():
                         if i_line==0 and header:
                             head = line #If first line is expected to be a header, save the line as "head"
+                            cols = parselogic.t_col(head=head,delimit=self.delimit)
+                            self.col = cols
                         else:
                             if read_tweet: # If tweets need to be read
                                 l_list = line.split(self.delimit)
@@ -73,17 +77,24 @@ class subsample(object):
                                 matched_kw = False
                                 matched_uid = False
 
-                                if len(l_list[rt_incol]) > 0:
-                                    i_rt_total = i_rt_total + 1
-                                    is_rt = True
-                                    if rt_ignore:
-                                        ignored = True # Ignore RTs
+                                try:
+                                    if len(l_list[cols['rt_t_tid']]) > 0:   #this coloum is misnamed in some files.
+                                        i_rt_total = i_rt_total + 1
+                                        is_rt = True
+                                        if rt_ignore:
+                                            ignored = True # Ignore RTs
+                                except:
+                                    if len(l_list[cols['rt_t_id']]) > 0:    #it should be this
+                                        i_rt_total = i_rt_total + 1
+                                        is_rt = True
+                                        if rt_ignore:
+                                            ignored = True # Ignore RTs
                                 
-                                if geo_only and len(l_list[geo_incol]) < 1:
+                                if geo_only and len(l_list[cols['u_geotag']]) == 0:
                                     ignored = True # Ignore non-Geocoded
                                 
                                 if match_kw:
-                                    text = ' '+l_list[kw_incol]+' '+l_list[quote_incol]+' '
+                                    text = ' '+l_list[cols['t_text']]+' '+l_list[cols['t_quote']]+' '
                                     text = parselogic.reformat(text, emojis=None, mode=4.5, lcase=True)
                                     kw_is_rt = False
                                     for kw in kw_redux:
@@ -98,7 +109,7 @@ class subsample(object):
                                         ignored = True
                                 
                                 if match_uid and not ignored:
-                                    if l_list[uid_incol] in uid_redux:
+                                    if l_list[cols['u_id']] in uid_redux:
                                         matched_uid = True
                                         i_uid += 1
                                         if is_rt:
@@ -106,18 +117,17 @@ class subsample(object):
                                             i_rt_uid += 1
                                     else:
                                         ignored = True
-                                        
-                                    #for uid in uid_redux:
-                                    #    if l_list[uid_incol] == uid:
-                                    #        matched_uid = True
-                                    #        i_uid += 1
-                                    #        if is_rt:
-                                    #            uid_is_rt = True
-                                    #            i_rt_uid += 1
-                                    #        break
-                                    #if not matched_uid:
-                                    #    ignored = True
                                 
+                                if match_val and not ignored:
+                                    matched_val = parselogic.criteria_match(l_list=l_list, cols=cols, vals=val_redux)
+                                    if matched_val:
+                                        i_val += 1
+                                        if is_rt:
+                                            val_is_rt = True
+                                            i_rt_val += 1
+                                    else:
+                                        ignored = True
+                                        
                                 if not ignored:
                                     datadict.setdefault(fn, []).append(line)
                                     datalines.append(line)
@@ -152,6 +162,19 @@ class subsample(object):
                     print('All Tweets+RTs:      ',i_uid)
                     print('Retweets:            ',i_rt_uid)
                 print('Original Tweets:     ',i_uid-i_rt_uid)
+            if match_val:
+                if match_uid:
+                    print('\n----- VALUE MATCHED: (w/in user_id matched)')
+                elif match_kw:
+                    print('\n----- VALUE MATCHED: (w/in keyword matched)')
+                else:
+                    print('\n----- VALUE MATCHED:')
+                if rt_ignore:
+                    print('Retweets ignored')
+                else:
+                    print('All Tweets+RTs:      ',i_val)
+                    print('Retweets:            ',i_rt_val)
+                print('Original Tweets:     ',i_val-i_rt_val)
             
             
             print('\nTweets in sample:    ',len(datalines))
@@ -223,7 +246,7 @@ class subsample(object):
     # The Spearman Rho correlation coeficient assesses sample representation 
     # This option does not support stratification
     def hashspear(self, reduce=0, hash_n=20, spear=0.9, iterate=100):
-        kw_incol = self.kw_incol
+        cols = self.cols
         data = self.data
         import string, re, operator, math 
         
@@ -232,8 +255,12 @@ class subsample(object):
             hashtop = {}
             for line in data:
                 # Get tweet text:
-                text = line.lower().split(self.delimit)[kw_incol]
-                #text = re.sub('\\',' ', text) # Unclear what this was supposed to accomplish
+                l_list = line.split(self.delimit)
+                text = ' '+l_list[cols['t_text']]+' '+l_list[cols['t_quote']]+' '
+                text = parselogic.reformat(text, emojis=None, mode=4.5, lcase=True)
+                text = re.sub('\\',' ', text)
+                text = re.sub('# ','#', text)
+                text = re.sub('#',' #', text)
                 # Get unique hashtags from within tweet text:
                 hashtags = list(set(part[1:] for part in text.split() if part.startswith('#')))
                 # Remove empty entry, if present
@@ -382,6 +409,7 @@ if __name__ == '__main__':
     halt = False
     keywords = []
     uids = []
+    vals = []
     
     
     # Unique command line arguments
@@ -428,14 +456,37 @@ if __name__ == '__main__':
         rt_status = cv['rt_status']
         dir_in_uid = cv['dir_in_uid']
         f_uid = cv['f_uid']
+        dir_in_tid = cv['dir_in_tid']
+        f_tid = cv['f_tid']
+        dir_in_gid = cv['dir_in_gid']
+        f_gid = cv['f_gid']
+        dir_in_val = cv['dir_in_val']
+        f_val = cv['f_val']
+        get_uid = cv['get_uid']
+        get_tid = cv['get_tid']
+        get_gid = cv['get_gid']
+        get_kws = cv['get_kws']
+        get_val = cv['get_val']
         
         # Get keywords
-        if cv['f_kws'] or cv['dir_in_kws']:
+        if get_kws:
             keywords = parselogic.kwslist(dir_in_kws, f_kws)
 
         # Get UIDs
-        if cv['f_uid'] or cv['dir_in_uid']:
-            uids = parselogic.uidlist(dir_in_uid, f_uid)
+        if get_uid:
+            uids = parselogic.othlist(dir_in_uid, f_uid, f_ext='.uid', prefix='\'')
+
+        # Get TIDs
+        if get_tid:
+            tids = parselogic.othlist(dir_in_tid, f_tid, f_ext='.tid', prefix='\'')
+
+        # Get GIDs
+        if get_gid:
+            gids = parselogic.othlist(dir_in_gid, f_gid, f_ext='.gid')
+
+        # Get values
+        if get_val:
+            vals = parselogic.othlist(dir_in_val, f_val, f_ext='.val')
     
         # Get data files
         if stratify:
@@ -461,7 +512,7 @@ if __name__ == '__main__':
 
 
     if not halt:
-        redux1 = subsample(dir_in=dir_in, datafiles=datafiles, kw_redux=keywords, uid_redux=uids, rt_ignore=rt_ignore)
+        redux1 = subsample(dir_in=dir_in, datafiles=datafiles, kw_redux=keywords, uid_redux=uids, val_redux=vals, rt_ignore=rt_ignore)
         head = redux1.head
         if reduce >= 0: r = int(reduce)
         else: r = reduce
