@@ -689,10 +689,9 @@ def match(test, text):
     # "!" operator may have undesirable Boolean behavior: use with caution!
 
     test = test.replace('! ' , '!') # Remove space after "!" for processing
-    
     test = test.replace('#' , '# ') # Reformat to catch hashtags as keywords...
     while '  ' in test:
-        text = test.replace('  ' , ' ') # Make multuple spaces into single spaces 
+        test = test.replace('  ' , ' ') # Make multuple spaces into single spaces 
 
 
     
