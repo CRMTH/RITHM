@@ -62,7 +62,7 @@ class subsample(object):
             
             for fn in datafiles:
                 i_line = 0
-                with open(dir_in+fn, 'r') as infile:
+                with open(dir_in+fn, 'r', encoding='utf-8') as infile:
                     for line in infile.readlines():
                         if i_line==0 and header:
                             head = line #If first line is expected to be a header, save the line as "head"
@@ -530,9 +530,9 @@ if __name__ == '__main__':
                 
         #head = 'userID,username,utc off,profile created,favorites,followers,following,tweets,tweetID,retweetID,retweet user,retweet count,extended,text,date,day,year,month,day,hour,min,sec,url,lat,lon\n'
         
-        with open(dir_out+f_stem+outfile, 'w+') as ofile:
+        with open(dir_out+f_stem+outfile, 'w+', encoding='utf-8') as ofile:
             ofile.write(head)
-        with open(dir_out+f_stem+outfile, 'a+') as ofile:
+        with open(dir_out+f_stem+outfile, 'a+', encoding='utf-8') as ofile:
             for line in redux2:
                 ofile.write(line)
     
