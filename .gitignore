@@ -18,3 +18,4 @@
 
 # Directories: 
 ./data/*
+*.ipynb
