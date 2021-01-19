@@ -32,7 +32,7 @@ def DataDict(dir_in, start=None, end=None,
            data_dict[date][k] = 0
            
     for f in datafiles: 
-        with open(dir_in+f, 'r') as o:
+        with open(dir_in+f, 'r', encoding='utf-8') as o:
             i=0
             for l in o: #for each line in the open file
                 i+=1
