@@ -288,12 +288,12 @@ class decoder:
         entities.append(data['user']['screen_name'])#.encode('utf-8')) # u_handle
 
         if data['user']['name']:
-            name = parselogic.reformat(data['user']['name'], self.emojis, mode=1.0, lcase=self.lcase)
+            name = parselogic.reformat(data['user']['name'], self.emojis, mode=2.0, lcase=self.lcase)
             entities.append(name)#.encode('utf-8')) # u_name
         else: entities.append('') 
 
         if data['user']['description']:
-            desc = parselogic.reformat(data['user']['description'], self.emojis, mode=self.mode, lcase=self.lcase)
+            desc = parselogic.reformat(data['user']['description'], self.emojis, mode=2.0, lcase=self.lcase)
             entities.append(desc)#.encode('utf-8')) # u_desc
         else: entities.append('') 
 
@@ -314,7 +314,7 @@ class decoder:
         except: entities.append('')
 
         try: 
-            loc = parselogic.reformat(data['user']['location'], self.emojis, mode=self.mode, lcase=self.lcase)
+            loc = parselogic.reformat(data['user']['location'], self.emojis, mode=2.0, lcase=self.lcase)
             entities.append(loc)
         except: entities.append('') 
         #Deprecated
@@ -353,10 +353,10 @@ class decoder:
             except: t_id = '\''
         entities.append(t_id) # t_id
 
-        text = parselogic.reformat(parsed_text, self.emojis, mode=self.mode, lcase=self.lcase)
+        text = parselogic.reformat(parsed_text, self.emojis, mode=2.0, lcase=self.lcase)
         entities.append(text) # t_text
 
-        quote = parselogic.reformat(parsed_quote, self.emojis, mode=self.mode, lcase=self.lcase)
+        quote = parselogic.reformat(parsed_quote, self.emojis, mode=2.0, lcase=self.lcase)
         entities.append(quote) # t_quote
 
         entities.append('http://twitter.com/'+str(data['user']['screen_name'])+'/status/'+t_id.strip('\'')) # t_url
@@ -372,7 +372,7 @@ class decoder:
         poly_coords = decoder.getPolygonCoords(self, data)
         entities.append(poly_coords[0]+' '+poly_coords[1])
 
-        try: place =  parselogic.reformat(data['place']['full_name'], self.emojis, mode=1.0, lcase=self.lcase)
+        try: place =  parselogic.reformat(data['place']['full_name'], self.emojis, mode=2.0, lcase=self.lcase)
         except: place = ''
         entities.append(place) # t_place
 

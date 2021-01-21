@@ -531,6 +531,7 @@ def emojify(text, emojis):
 # This is a crude, hierarchical way to organize modes for reformat function
 modes = {'tsv':'1.0',
          'csv':'1.5',
+         'tsv_new':'2.0',
          'hum':'3.5',
          'kws':'4.5'}
 
@@ -541,6 +542,7 @@ modes = {'tsv':'1.0',
 #     1.0 'tsv' = Only replace tabs, and hard returns (TSV compatability) 
 #                 This is currently the default for output. 
 #     1.5 'csv' = Replace commas, tabs, and hard returns (CSV compatability) 
+#     2.0 'tsv_new' = Remove tabs and returns, nothing else
 #     3.5 'hum' = Format for maximum human readability (useful for annotation)
 #     4.5 'kws' = Format for keyword matching (default for search procedures)
 #
@@ -568,6 +570,9 @@ def reformat(text, emojis=None, emojifile=None,
         else:
             print('reformat(mode) value not recognized')
             pass
+        
+    if mode == 2.0:
+        return re.sub(r'[\t\n]+','',text)
         
     # Always buffer whitespace for matching text
     text = ' '+text+' '
