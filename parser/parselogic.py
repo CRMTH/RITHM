@@ -572,7 +572,7 @@ def reformat(text, emojis=None, emojifile=None,
             pass
         
     if mode == 2.0:
-        return re.sub(r'[\t\n]+','',text)
+        return re.sub(r'[\t\n\r]+',' ',text)
         
     # Always buffer whitespace for matching text
     text = ' '+text+' '
