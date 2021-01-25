@@ -63,7 +63,7 @@ class subsample(object):
             for fn in datafiles:
                 i_line = 0
                 with open(dir_in+fn, 'r', encoding='utf-8') as infile:
-                    for line in infile.readlines():
+                    for line in infile:
                         if i_line==0 and header:
                             head = line #If first line is expected to be a header, save the line as "head"
                             cols = parselogic.t_col(head=head,delimit=self.delimit)
