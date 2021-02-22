@@ -641,7 +641,9 @@ def reformat(text, emojis=None, emojifile=None,
     
     if ht_include:
         # This is important so that keywords can match hashtagged keywords
-        text = text.replace('#', '# ')
+        text = text.replace('#', '# ') # add a space
+        while '#  ' in text:
+            text = text.replace('#  ' , '# ') # but not two spaces
         
 
     # Repair hyperlinks
