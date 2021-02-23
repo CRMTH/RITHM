@@ -394,6 +394,8 @@ class subsample(object):
             else:
                 pass
         print('Best Rho: ', self.returns['rho'], 'Iterations: ', self.returns['i'])
+        for m in self.returns['matrix']: 
+            print(m)
         return self.returns
             
 
