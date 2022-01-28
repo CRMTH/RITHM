@@ -1,3 +1,5 @@
+### **This repository is deprecated. The most recent [fork](https://github.com/Twitter-R01/RITHM) is maintained by researchers at the University of Arkansas.**  
+
 ## Real-time Infoveillance of Twitter Health Messages (RITHM)
 ![MTH logo](http://mth.pitt.edu/sites/all/themes/pitt_cromh/img/CROMH-mark-revised.png)
 
